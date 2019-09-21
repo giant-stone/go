@@ -2,19 +2,48 @@ package http
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
 )
 
 // Request perform HTTP request with custom method, timeout and headers parameters.
-func Request(timeout time.Duration, method string, fullurl string, headers *map[string]interface{}, reqBody []byte) (status int, bodyResp []byte, err error) {
+func Request(
+	timeout time.Duration,
+	method string,
+	fullurl string,
+	headers *map[string]interface{},
+	reqBody []byte,
+	proxyUrl string,
+	) (status int, bodyResp []byte, err error) {
+
+
 	client := &http.Client{
 		Timeout: timeout,
 	}
+
+	if proxyUrl != "" {
+		var tr *http.Transport
+		u, errUrl := url.Parse(proxyUrl)
+		if errUrl != nil {
+			err = errUrl
+			return
+		}
+		tr = &http.Transport{
+			Proxy: http.ProxyURL(u),
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+
+		client.Transport = tr
+
+		log.Printf("[debug] proxy=%s", proxyUrl)
+	}
+
 	start := time.Now()
 
 	var body io.Reader
