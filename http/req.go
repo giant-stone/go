@@ -20,8 +20,7 @@ func Request(
 	headers *map[string]interface{},
 	reqBody []byte,
 	proxyUrl string,
-	) (status int, bodyResp []byte, err error) {
-
+) (status int, bodyResp []byte, err error) {
 
 	client := &http.Client{
 		Timeout: timeout,
@@ -35,13 +34,20 @@ func Request(
 			return
 		}
 		tr = &http.Transport{
-			Proxy: http.ProxyURL(u),
+			Proxy:           http.ProxyURL(u),
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}
 
 		client.Transport = tr
 
 		log.Printf("[debug] proxy=%s", proxyUrl)
+	} else {
+		var tr *http.Transport
+		tr = &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+
+		client.Transport = tr
 	}
 
 	start := time.Now()
