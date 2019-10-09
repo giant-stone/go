@@ -72,7 +72,7 @@ func Request(
 	elapsed := time.Since(start) / time.Millisecond
 
 	if err != nil {
-		log.Println(fmt.Sprintf("[error] client.Do failed, POST %s reqbody.bytes=%d", fullurl, len(reqBody)), err)
+		log.Println(fmt.Sprintf("[error] client.Do failed, %s %s reqbody.bytes=%d", method, fullurl, len(reqBody)), err)
 		return
 	}
 
