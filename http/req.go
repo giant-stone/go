@@ -39,8 +39,7 @@ func Request(
 		}
 
 		client.Transport = tr
-
-		log.Printf("[debug] proxy=%s", proxyUrl)
+		//log.Printf("[debug] proxy=%s", proxyUrl)
 	} else {
 		var tr *http.Transport
 		tr = &http.Transport{
@@ -58,7 +57,7 @@ func Request(
 	}
 	req, err := http.NewRequest(method, fullurl, body)
 	if err != nil {
-		log.Println(fmt.Sprintf("[error] http.NewRequest failed, %s %s reqbody.bytes=%d", method, fullurl, len(reqBody)), err)
+		//log.Println(fmt.Sprintf("[error] http.NewRequest failed, %s %s reqbody.bytes=%d", method, fullurl, len(reqBody)), err)
 		return
 	}
 
@@ -72,7 +71,7 @@ func Request(
 	elapsed := time.Since(start) / time.Millisecond
 
 	if err != nil {
-		log.Println(fmt.Sprintf("[error] client.Do failed, %s %s reqbody.bytes=%d", method, fullurl, len(reqBody)), err)
+		//log.Println(fmt.Sprintf("[error] client.Do failed, %s %s reqbody.bytes=%d", method, fullurl, len(reqBody)), err)
 		return
 	}
 
@@ -82,13 +81,13 @@ func Request(
 
 	bodyResp, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println(fmt.Sprintf("[error] read body failed, url=%s reqbody.bytes=%d", fullurl, len(reqBody)), err)
+		//log.Println(fmt.Sprintf("[error] read body failed, url=%s reqbody.bytes=%d", fullurl, len(reqBody)), err)
 		return
 	}
 
 	warnIfSlowThan := time.Duration(250) * time.Millisecond
 	if elapsed > warnIfSlowThan {
-		log.Println(fmt.Sprintf("[debug] request %s %d %dms", fullurl, status, elapsed))
+		//log.Println(fmt.Sprintf("[debug] request %s %d %dms", fullurl, status, elapsed))
 	}
 	return
 }
