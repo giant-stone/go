@@ -1,4 +1,4 @@
-package util
+package gutil
 
 import (
 	"log"
@@ -13,7 +13,6 @@ func CheckErr(err error) bool {
 	}
 	return false
 }
-
 
 // ExitOnErr print fatal error with stack context and exit.
 func ExitOnErr(err error) {
