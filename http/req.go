@@ -18,7 +18,6 @@ type HttpResponse struct {
 	http.Response
 
 	Body    *[]byte
-	Err     error
 	Elapsed time.Duration
 }
 
@@ -35,7 +34,6 @@ type HttpRequest struct {
 
 	Proxy string
 
-	Sent     bool
 	Response *HttpResponse
 }
 
@@ -117,21 +115,26 @@ func (its *HttpRequest) Send() (err error) {
 	resp, err := client.Do(req)
 	elapsed := time.Since(start)
 
+	if err != nil {
+		its.Response = &HttpResponse{
+			Body:     nil,
+			Elapsed:  elapsed,
+		}
+		return
+	}
+
 	its.Response = &HttpResponse{
 		Response: *resp,
 		Body:     nil,
-		Err:      err,
 		Elapsed:  elapsed,
 	}
 
-	if err != nil {
-		return
-	}
 	defer resp.Body.Close()
 
-	bodyResp, errRespBody := ioutil.ReadAll(resp.Body)
-	its.Response.Body = &bodyResp
-	its.Response.Err = errRespBody
+	bodyResp, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		its.Response.Body = &bodyResp
+	}
 
-	return nil
+	return
 }
