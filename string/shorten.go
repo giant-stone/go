@@ -1,4 +1,4 @@
-package str
+package gstr
 
 // Shorten it cuts and concatenates a part of string with ellipsis if its length long than 500 bytes.
 func Shorten(b []byte) string {
