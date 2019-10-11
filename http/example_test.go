@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/giant-stone/Go/http"
+	"github.com/giant-stone/go/http"
 )
 
 func ExampleNew() {

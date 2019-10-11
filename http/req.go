@@ -11,7 +11,7 @@ import (
 	"crypto/tls"
 	"net/url"
 
-	"github.com/giant-stone/Go/util"
+	"github.com/giant-stone/go/util"
 )
 
 type HttpResponse struct {
