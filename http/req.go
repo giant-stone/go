@@ -132,7 +132,7 @@ func (its *HttpRequest) Send() (err error) {
 	defer resp.Body.Close()
 
 	bodyResp, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
+	if err == nil {
 		its.Response.Body = &bodyResp
 	}
 
