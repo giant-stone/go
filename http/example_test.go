@@ -11,7 +11,7 @@ func ExampleNew() {
 	postData := []byte(`{"msg":"hello"}`)
 	req := ghttp.New().
 		SetRandomUserAgent(true).
-		SetTimeout(time.Second*3).
+		SetTimeout(time.Second * 3).
 		SetRequestMethod("POST").
 		SetUri("http://httpbin.org/post").
 		SetProxy("http://172.21.27.11:8118").
