@@ -38,7 +38,9 @@ type HttpRequest struct {
 }
 
 func New() *HttpRequest {
-	return &HttpRequest{}
+	return &HttpRequest{
+		Headers: &map[string]interface{}{},
+	}
 }
 
 func (its *HttpRequest) SetRandomUserAgent(flag bool) *HttpRequest {
@@ -69,6 +71,17 @@ func (its *HttpRequest) SetProxy(addr string) *HttpRequest {
 
 func (its *HttpRequest) SetPostBody(body *[]byte) *HttpRequest {
 	its.Body = body
+	return its
+}
+
+func (its *HttpRequest) SetHttpAuth(username, password string) *HttpRequest {
+	value := "Basic " + base64.StdEncoding.EncodeToString(fmt.Sprintf("%s:%s", username, password))
+	its.SetHeader("Authorization", value)
+	return its
+}
+
+func (its *HttpRequest) SetHeader(key string, value interface{}) *HttpRequest {
+	(*its.Headers)[key] = value
 	return its
 }
 
@@ -117,8 +130,8 @@ func (its *HttpRequest) Send() (err error) {
 
 	if err != nil {
 		its.Response = &HttpResponse{
-			Body:     nil,
-			Elapsed:  elapsed,
+			Body:    nil,
+			Elapsed: elapsed,
 		}
 		return
 	}
