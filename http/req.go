@@ -2,14 +2,15 @@ package ghttp
 
 import (
 	"bytes"
+	"crypto/tls"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
-	"time"
-
-	"crypto/tls"
 	"net/url"
+	"strings"
+	"time"
 
 	"github.com/giant-stone/go/util"
 )
@@ -75,7 +76,8 @@ func (its *HttpRequest) SetPostBody(body *[]byte) *HttpRequest {
 }
 
 func (its *HttpRequest) SetHttpAuth(username, password string) *HttpRequest {
-	value := "Basic " + base64.StdEncoding.EncodeToString(fmt.Sprintf("%s:%s", username, password))
+	plain := fmt.Sprintf("%s:%s", username, password)
+	value := "Basic " + base64.StdEncoding.EncodeToString([]byte(plain))
 	its.SetHeader("Authorization", value)
 	return its
 }
@@ -95,7 +97,12 @@ func (its *HttpRequest) Send() (err error) {
 	}
 
 	if its.Proxy != "" {
-		u, errUrl := url.Parse(its.Proxy)
+		proxyNode := its.Proxy 
+		if !strings.HasPrefix(proxyNode, "http") {
+			proxyNode = fmt.Sprintf("http://%s", proxyNode)
+		}
+		
+		u, errUrl := url.Parse(proxyNode)
 		if errUrl != nil {
 			err = errUrl
 			return
