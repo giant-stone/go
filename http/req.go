@@ -15,32 +15,27 @@ import (
 	"github.com/giant-stone/go/util"
 )
 
-type HttpResponse struct {
-	http.Response
-
-	Body    *[]byte
-	Elapsed time.Duration
-}
-
 type HttpRequest struct {
 	Timeout time.Duration
 
 	Method  string
 	Uri     string
-	Headers *map[string]interface{}
-	Body    *[]byte
+	Headers map[string]interface{}
+	Body    []byte
 
 	UseRandomUserAgent bool
 	UserAgent          string
 
 	Proxy string
 
-	Response *HttpResponse
+	RespStatus int
+	RespBody   []byte
+	Elapsed    time.Duration
 }
 
 func New() *HttpRequest {
 	return &HttpRequest{
-		Headers: &map[string]interface{}{},
+		Headers: map[string]interface{}{},
 	}
 }
 
@@ -70,8 +65,11 @@ func (its *HttpRequest) SetProxy(addr string) *HttpRequest {
 	return its
 }
 
-func (its *HttpRequest) SetPostBody(body *[]byte) *HttpRequest {
-	its.Body = body
+func (its *HttpRequest) SetPostBody(body []byte) *HttpRequest {
+	if len(body) > 0 {
+		its.Body = make([]byte, len(body))
+		copy(its.Body, body)
+	}
 	return its
 }
 
@@ -83,7 +81,7 @@ func (its *HttpRequest) SetHttpAuth(username, password string) *HttpRequest {
 }
 
 func (its *HttpRequest) SetHeader(key string, value interface{}) *HttpRequest {
-	(*its.Headers)[key] = value
+	its.Headers[key] = value
 	return its
 }
 
@@ -97,11 +95,11 @@ func (its *HttpRequest) Send() (err error) {
 	}
 
 	if its.Proxy != "" {
-		proxyNode := its.Proxy 
+		proxyNode := its.Proxy
 		if !strings.HasPrefix(proxyNode, "http") {
 			proxyNode = fmt.Sprintf("http://%s", proxyNode)
 		}
-		
+
 		u, errUrl := url.Parse(proxyNode)
 		if errUrl != nil {
 			err = errUrl
@@ -113,18 +111,16 @@ func (its *HttpRequest) Send() (err error) {
 	client.Transport = &tr
 
 	var reqBody io.Reader
-	if its.Body != nil && len(*its.Body) > 0 {
-		reqBody = bytes.NewBuffer(*its.Body)
+	if len(its.Body) > 0 {
+		reqBody = bytes.NewBuffer(its.Body)
 	}
 	req, err := http.NewRequest(its.Method, its.Uri, reqBody)
 	if err != nil {
 		return
 	}
 
-	if its.Headers != nil {
-		for k, v := range *its.Headers {
-			req.Header.Set(k, fmt.Sprintf("%v", v))
-		}
+	for k, v := range its.Headers {
+		req.Header.Set(k, fmt.Sprintf("%v", v))
 	}
 
 	if its.UseRandomUserAgent {
@@ -136,25 +132,16 @@ func (its *HttpRequest) Send() (err error) {
 	elapsed := time.Since(start)
 
 	if err != nil {
-		its.Response = &HttpResponse{
-			Body:    nil,
-			Elapsed: elapsed,
-		}
+		its.Elapsed = elapsed
 		return
 	}
-
-	its.Response = &HttpResponse{
-		Response: *resp,
-		Body:     nil,
-		Elapsed:  elapsed,
-	}
-
 	defer resp.Body.Close()
 
-	bodyResp, err := ioutil.ReadAll(resp.Body)
-	if err == nil {
-		its.Response.Body = &bodyResp
+	its.RespStatus = resp.StatusCode
+	RespBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
 	}
-
+	its.RespBody = RespBody
 	return
 }
