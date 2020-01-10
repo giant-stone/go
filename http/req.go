@@ -85,6 +85,14 @@ func (its *HttpRequest) SetHeader(key string, value interface{}) *HttpRequest {
 	return its
 }
 
+func (its *HttpRequest) SetHeaders(headers map[string]interface{}) *HttpRequest {
+	for key, value := range headers {
+		its.Headers[key] = value
+	}
+	return its
+}
+
+
 func (its *HttpRequest) Send() (err error) {
 	client := &http.Client{
 		Timeout: its.Timeout,
