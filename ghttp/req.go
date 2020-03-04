@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/giant-stone/go/util"
+	"github.com/giant-stone/go/gutil"
 )
 
 type HttpRequest struct {
