@@ -1,3 +1,4 @@
+// Python json.tool function implementation.
 package main
 
 import (

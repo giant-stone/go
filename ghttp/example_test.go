@@ -1,26 +1,22 @@
 package ghttp_test
 
 import (
-	"log"
+	"os"
 	"time"
 
-	"github.com/giant-stone/go/http"
+	"github.com/giant-stone/go/ghttp"
 )
 
 func ExampleNew() {
+	fullurl := "https://httpbin.org/post"
 	postData := []byte(`{"msg":"hello"}`)
 	req := ghttp.New().
 		SetRandomUserAgent(true).
 		SetTimeout(time.Second * 3).
 		SetRequestMethod("POST").
-		SetUri("http://httpbin.org/post").
-		SetProxy("http://172.21.27.11:8118").
+		SetUri(fullurl).
+		SetProxy(os.Getenv("HTTPS_PROXY")).
 		SetPostBody(&postData)
 	err := req.Send()
-	if err != nil {
-		log.Println(err)
-	} else {
-		log.Println(req.Response.Status, len(*req.Response.Body), string(*req.Response.Body))
-	}
-
+	ghttp.CheckRequestErr(fullurl, req.RespStatus, req.RespBody, err)
 }
