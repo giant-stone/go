@@ -8,7 +8,7 @@ import (
 func CmpExpectedGot(t *testing.T, key, expI, gotI interface{}) {
 	if expI == nil {
 		if expI != gotI {
-			t.Errorf("-%+q- expected=%s got=%s", key, expI, gotI)
+			t.Errorf("%+q expected=%s got=%s", key, expI, gotI)
 		}
 		return
 	}
@@ -21,7 +21,7 @@ func CmpExpectedGot(t *testing.T, key, expI, gotI interface{}) {
 			got := gotI.(string)
 
 			if exp != got {
-				t.Errorf("-%+q- expected=-%s- got=-%s-", key, exp, got)
+				t.Errorf("%+q expected=-%s- got=-%s-", key, exp, got)
 			}
 			break
 		}
@@ -32,7 +32,7 @@ func CmpExpectedGot(t *testing.T, key, expI, gotI interface{}) {
 			got := gotI.(float64)
 
 			if (exp - got) < 0.001 {
-				t.Errorf("-%+q- expected=%f got=%f", key, exp, got)
+				t.Errorf("%+q expected=%f got=%f", key, exp, got)
 			}
 			break
 		}
@@ -43,7 +43,7 @@ func CmpExpectedGot(t *testing.T, key, expI, gotI interface{}) {
 			got := gotI.(bool)
 
 			if exp != got {
-				t.Errorf("-%+q- expected=%t got=%t", key, exp, got)
+				t.Errorf("%+q expected=%t got=%t", key, exp, got)
 			}
 			break
 		}
@@ -54,7 +54,18 @@ func CmpExpectedGot(t *testing.T, key, expI, gotI interface{}) {
 			got := gotI.(int)
 
 			if exp != got {
-				t.Errorf("-%+q- expected=%d got=%d", key, exp, got)
+				t.Errorf("%+q expected=%d got=%d", key, exp, got)
+			}
+			break
+		}
+
+	case "int64":
+		{
+			exp := expI.(int64)
+			got := gotI.(int64)
+
+			if exp != got {
+				t.Errorf("%+q expected=%d got=%d", key, exp, got)
 			}
 			break
 		}
@@ -65,7 +76,7 @@ func CmpExpectedGot(t *testing.T, key, expI, gotI interface{}) {
 			got := gotI.(uint32)
 
 			if exp != got {
-				t.Errorf("-%+q- expected=%d got=%d", key, exp, got)
+				t.Errorf("%+q expected=%d got=%d", key, exp, got)
 			}
 			break
 		}
@@ -76,7 +87,7 @@ func CmpExpectedGot(t *testing.T, key, expI, gotI interface{}) {
 			got := gotI.(error)
 
 			if exp != got {
-				t.Errorf("-%+q- expected=%v got=%v", key, exp, got)
+				t.Errorf("%+q expected=%v got=%v", key, exp, got)
 			}
 			break
 		}
