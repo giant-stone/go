@@ -65,10 +65,10 @@ func (its *HttpRequest) SetProxy(addr string) *HttpRequest {
 	return its
 }
 
-func (its *HttpRequest) SetPostBody(body []byte) *HttpRequest {
-	if len(body) > 0 {
-		its.Body = make([]byte, len(body))
-		copy(its.Body, body)
+func (its *HttpRequest) SetPostBody(body *[]byte) *HttpRequest {
+	if body != nil && len(*body) > 0 {
+		its.Body = make([]byte, len(*body))
+		copy(its.Body, *body)
 	}
 	return its
 }
@@ -91,7 +91,6 @@ func (its *HttpRequest) SetHeaders(headers map[string]interface{}) *HttpRequest 
 	}
 	return its
 }
-
 
 func (its *HttpRequest) Send() (err error) {
 	client := &http.Client{
