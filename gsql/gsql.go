@@ -16,6 +16,8 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/jmoiron/sqlx"
+
+	"github.com/giant-stone/go/gstr"
 )
 
 var (
@@ -177,6 +179,102 @@ func (its *GSql) Gets(
 		columnsQuery,
 		its.TableName,
 		strings.Join(wheres, " AND "),
+		limit)
+
+	if its.Debug {
+		log.Println("[debug] sql", s, args)
+	}
+
+	err = db.Select(objs, s, args...)
+	return
+}
+
+// GetsWhere query records with where conditions, all conditions are concatenate with " AND " operator by default.
+// You have to put all "OR" conditions at the end if mix with "AND" ones.
+// case
+//   NO "select * from mytbl where a=b or c=d or z=y and e=f"
+//   YES "select * from mytbl where a=b and e=f and (c=d or z=y)"
+func (its *GSql) GetsWhere(
+	db *sqlx.DB,
+	objs interface{},
+	columns *[]string,
+	conditionsWhere *[]map[string]interface{},
+	limit int) (err error) {
+	if db == nil {
+		db, err = its.OpenDB()
+		if err != nil {
+			return
+		}
+		defer db.Close()
+	}
+
+	var columnsQuery string
+	if columns != nil && len(*columns) > 0 {
+		columnsQuery = strings.Join(*columns, ",")
+	} else if len(its.Columns) > 0 {
+		columnsQuery = strings.Join(its.Columns, ",")
+	} else {
+		columnsQuery = "*"
+	}
+
+	// make WHERE works with empty conditionsWhere
+	wheres := []string{}
+	args := []interface{}{}
+
+	orCount := 0
+
+	for _, item := range *conditionsWhere {
+		cond, okCond := item["cond"].(string)
+
+		if !okCond {
+			cond = "AND"
+		} else {
+			cond = strings.ToUpper(cond)
+			if !gstr.StrInSlice([]string{"AND", "OR"}, cond) {
+				cond = "AND"
+			}
+		}
+		if cond == "OR" {
+			orCount += 1
+		}
+
+		// hard-coded fix pass `is/is not null` condition
+		v, ok := item["value"].(string)
+		if ok && v == "null" {
+			cond := fmt.Sprintf("%v %v null %s",
+				item["key"],
+				item["op"],
+				cond,
+			)
+			if orCount == 1 {
+				cond = "(" + cond
+			}
+			wheres = append(wheres, cond)
+		} else {
+			cond := fmt.Sprintf("%v %v ? %s",
+				item["key"],
+				item["op"],
+				cond,
+			)
+			if orCount == 1 {
+				cond = "(" + cond
+			}
+			wheres = append(wheres, cond)
+			args = append(args, item["value"])
+		}
+	}
+
+	if orCount > 0 {
+		wheres = append(wheres, "or 0)")
+	} else {
+		wheres = append(wheres, "1=1")
+	}
+
+	var s string
+	s = fmt.Sprintf("SELECT %s FROM %s WHERE %s LIMIT %d",
+		columnsQuery,
+		its.TableName,
+		strings.Join(wheres, " "),
 		limit)
 
 	if its.Debug {
@@ -475,17 +573,35 @@ func (its *GSql) Del(
 	return
 }
 
-// GetColumns returns query columns from tag `db` in strutt.
-func (its *GSql) GetColumns(obj interface{}) []string {
-	te := reflect.TypeOf(obj).Elem()
-	columns := []string{}
-	for i := 0; i < te.NumField(); i++ {
-		field := te.Field(i).Tag.Get("db")
+func parseStructTags(s interface{}, tagsDb *[]string, tagName string) {
+	t := reflect.TypeOf(s)
+	te := t.Elem()
+	parseStructFieldTag(te, tagsDb, tagName)
+}
+
+func parseStructFieldTag(tt reflect.Type, tags *[]string, tagName string) {
+	for i := 0; i < tt.NumField(); i++ {
+		subT := tt.Field(i).Type
+		subTName := subT.Kind().String()
+		if subTName == "struct" {
+			parseStructFieldTag(subT, tags, tagName)
+			continue
+		}
+
+		field := tt.Field(i).Tag.Get(tagName)
 		if field != "" && field != "-" {
-			columns = append(columns, field)
+			*tags = append(*tags, field)
 		}
 	}
-	return columns
+}
+
+
+// GetColumns returns query columns from tag `db` in strutt.
+// Example GetColumns(&myObj{})
+func (its *GSql) GetColumns(obj interface{}) []string {
+	var tagsDb []string
+	parseStructTags(obj, &tagsDb, "db")
+	return tagsDb
 
 }
 
