@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -16,6 +17,7 @@ import (
 )
 
 type HttpRequest struct {
+	Debug bool
 	Timeout time.Duration
 
 	Method  string
@@ -107,6 +109,10 @@ func (its *HttpRequest) Send() (err error) {
 			proxyNode = fmt.Sprintf("http://%s", proxyNode)
 		}
 
+		if its.Debug {
+			log.Printf("[debug] proxy=%s", proxyNode)
+		}
+
 		u, errUrl := url.Parse(proxyNode)
 		if errUrl != nil {
 			err = errUrl
@@ -121,6 +127,11 @@ func (its *HttpRequest) Send() (err error) {
 	if len(its.Body) > 0 {
 		reqBody = bytes.NewBuffer(its.Body)
 	}
+
+	if its.Debug {
+		log.Printf("[debug] %s %s", its.Method, its.Uri)
+	}
+
 	req, err := http.NewRequest(its.Method, its.Uri, reqBody)
 	if err != nil {
 		return
@@ -151,4 +162,9 @@ func (its *HttpRequest) Send() (err error) {
 	}
 	its.RespBody = RespBody
 	return
+}
+
+func (its *HttpRequest) SetDebug(debug bool) *HttpRequest {
+	its.Debug = debug
+	return its
 }
