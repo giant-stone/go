@@ -1,6 +1,6 @@
 # About
 
-giant-stone/go is a collection util in Go.
+giant-stone/go is a Go library which provides utility functions for common programming tasks.
 Confirm to https://en.wikipedia.org/wiki/Don%27t_repeat_yourself
 
 *Life is short, don't repeat yourself.*
