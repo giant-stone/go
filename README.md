@@ -1,6 +1,9 @@
 # About
 
 ![Go](https://github.com/giant-stone/go/workflows/Go/badge.svg?branch=master)
+[![Go Report Card](https://goreportcard.com/badge/github.com/giant-stone/go)](https://goreportcard.com/report/github.com/giant-stone/go)
+[![LICENSE](https://img.shields.io/github/license/giant-stone/go.svg?style=flat-square)](https://github.com/giant-stone/go/blob/master/LICENSE)
+
 
 giant-stone/go is a Go library which provides utility functions for common programming tasks.
 Confirm to https://en.wikipedia.org/wiki/Don%27t_repeat_yourself
