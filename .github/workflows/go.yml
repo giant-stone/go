@@ -13,6 +13,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+    - name: Setup MySQL
+      uses: mirromutth/mysql-action@v1.1
+      with:
+        host port: 3306 
+        container port: 3306
+        character set server: 'utf8mb4'
+        collation server: 'utf8mb4_general_ci'
+        mysql version: '8.0' 
+        mysql database: 'test' 
+        mysql root password: 'test'
+        mysql user: 'test' 
+        mysql password: 'test'
+
     - name: Set up Go 1.13
       uses: actions/setup-go@v1
       with:
