@@ -26,8 +26,6 @@ jobs:
         mysql version: '8.0' 
         mysql database: 'test' 
         mysql root password: 'root'
-        mysql user: 'test' 
-        mysql password: 'test'
         
     - name: Create DB
       run: mysql -hlocalhost -uroot -proot -e "CREATE DATABASE IF NOT EXISTS test;"     
