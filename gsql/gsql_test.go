@@ -1,9 +1,4 @@
 // Simple tests.
-// Setup database
-//   create database test;
-//   create user 'test'@'127.0.0.1' identified by 'test';
-//   grant all privileges on `test`.* to  'test'@'127.0.0.1';
-//   flush privileges;
 package gsql_test
 
 import (
@@ -16,15 +11,16 @@ import (
 )
 
 var (
-		sqlCreateTest = `CREATE TABLE IF NOT EXISTS test_gsql (
+	sqlCreateDb    = `CREATE DATABASE IF NOT EXISTS test;`
+	sqlCreateTable = `CREATE TABLE IF NOT EXISTS test_gsql (
 	id int not null AUTO_INCREMENT,
 	mobileno varchar(255) default '',
 	password varchar(255) default '',
 	UNIQUE KEY mobileno (mobileno),
 	PRIMARY KEY (id)
 ); `
-	
-	sqlDropTest = `DROP TABLE IF EXISTS test_gsql;`
+
+	sqlDropTable = `DROP TABLE IF EXISTS test_gsql;`
 )
 
 func tearDown(mgr *AccountProxy) {
@@ -33,7 +29,7 @@ func tearDown(mgr *AccountProxy) {
 		log.Fatalln("[fatal] mgr.OpenDB", err)
 	}
 	defer db.Close()
-	_, err = db.Exec(sqlDropTest)
+	_, err = db.Exec(sqlDropTable)
 	if err != nil {
 		if strings.Index(err.Error(), "Unknown table") != -1 {
 			// drop a table not exists, safe to skip
@@ -49,16 +45,22 @@ func setUp(mgr *AccountProxy) {
 		log.Fatalln("[fatal] mgr.OpenDB", err)
 	}
 	defer db.Close()
-	_, err = db.Exec(sqlCreateTest)
+
+	_, err = db.Exec(sqlCreateDb)
+	if err != nil {
+		log.Fatalln("[fatal] db.Exec", err)
+	}
+
+	_, err = db.Exec(sqlCreateTable)
 	if err != nil {
 		log.Fatalln("[fatal] db.Exec", err)
 	}
 }
 
 type Account struct {
-	ID           uint64    `json:"id" db:"id"`
-	Mobileno     string    `json:"mobileno" db:"mobileno"`
-	Password     string    `json:"password" db:"password"`
+	ID       uint64 `json:"id" db:"id"`
+	Mobileno string `json:"mobileno" db:"mobileno"`
+	Password string `json:"password" db:"password"`
 }
 
 type AccountProxy struct {
@@ -69,7 +71,7 @@ func NewAccountProxy() *AccountProxy {
 	p := AccountProxy{}
 	p.DriverName = "mysql"
 	p.Debug = true
-	p.Dsn = "test:test@tcp(127.0.0.1:3306)/test?charset=utf8mb4,utf8&timeout=2s&writeTimeout=2s&readTimeout=2s&parseTime=true"
+	p.Dsn = "root:root@tcp(127.0.0.1:3306)/test?charset=utf8mb4,utf8&timeout=2s&writeTimeout=2s&readTimeout=2s&parseTime=true"
 	p.TableName = "test_gsql"
 	p.Columns = p.GetColumns(&Account{})
 	return &p
@@ -86,13 +88,11 @@ func TestCreate(t *testing.T) {
 	var accounts []Account
 	mobilenoExpected := "13800138000"
 
-
-	err := mgr.Gets(db, &accounts, nil, &[]map[string]interface{}{{"key":"id", "op":"=","value":1}}, 1)
+	err := mgr.Gets(db, &accounts, nil, &[]map[string]interface{}{{"key": "id", "op": "=", "value": 1}}, 1)
 	cnt := len(accounts)
 	if err != nil || cnt > 0 {
 		t.Errorf("expected Gets err=nil cnt=0, got %v cnt=%d", err, cnt)
 	}
-
 
 	result, err := mgr.Create(db, &map[string]interface{}{"mobileno": mobilenoExpected})
 	if err != nil {
@@ -103,12 +103,12 @@ func TestCreate(t *testing.T) {
 		t.Errorf("expected LastInsertId lastInsertID>0 err=nil, got %d err=%v", lastInsertID, err)
 	}
 
-	err = mgr.Gets(db, &accounts, nil, &[]map[string]interface{}{{"key":"id", "op":"=","value":lastInsertID}}, 1)
+	err = mgr.Gets(db, &accounts, nil, &[]map[string]interface{}{{"key": "id", "op": "=", "value": lastInsertID}}, 1)
 	cnt = len(accounts)
 	if err == gsql.ErrRecordNotFound || cnt == 0 {
 		t.Errorf("expected Gets cnt>0 err=gsql.ErrRecordNotFound, got %d %v", cnt, err)
 	}
-	
+
 	accountGot := accounts[0]
 	if accountGot.Mobileno != mobilenoExpected || accountGot.Password != "" {
 		t.Errorf(`expected Gets password="", got %v`, accountGot.Password)
@@ -121,7 +121,6 @@ func TestCreate(t *testing.T) {
 
 	tearDown(mgr)
 }
-
 
 func TestGets(t *testing.T) {
 	TestCreate(t)
@@ -136,8 +135,8 @@ func TestCreateOrUpdate(t *testing.T) {
 	setUp(mgr)
 
 	var accounts []Account
-	
-	m := map[string]interface{}{"mobileno":"13800138000"}
+
+	m := map[string]interface{}{"mobileno": "13800138000"}
 	result, err := mgr.CreateOrUpdate(db, &m)
 	if err != nil {
 		t.Errorf("expected CreateOrUpdate err=nil, got %v", err)
@@ -146,7 +145,6 @@ func TestCreateOrUpdate(t *testing.T) {
 	if err != nil || lastInsertID <= 0 {
 		t.Errorf("expected LastInsertId lastInsertID>0, got lastInsertId=%d err=%v", lastInsertID, err)
 	}
-
 
 	passwordNew := "secret"
 	mUpdates := map[string]interface{}{
@@ -168,7 +166,7 @@ func TestCreateOrUpdate(t *testing.T) {
 		t.Errorf(`expected CreateOrUpdate rowsAffected>0 err=nil, got %d %v`, rowsAffected, err)
 	}
 
-	err = mgr.Gets(db, &accounts, nil, &[]map[string]interface{}{{"key":"id","op":"=","value":lastInsertID}}, 1)
+	err = mgr.Gets(db, &accounts, nil, &[]map[string]interface{}{{"key": "id", "op": "=", "value": lastInsertID}}, 1)
 	cnt := len(accounts)
 	if err != nil || cnt != 1 {
 		t.Errorf("expected Gets err=nil cnt=1, got %v %d", err, cnt)
@@ -180,7 +178,6 @@ func TestCreateOrUpdate(t *testing.T) {
 
 	tearDown(mgr)
 }
-
 
 func TestDel(t *testing.T) {
 	mgr := NewAccountProxy()
@@ -199,23 +196,21 @@ func TestDel(t *testing.T) {
 	if err != nil || lastInsertID <= 0 {
 		t.Errorf("expected LastInsertId lastInsertID>0 err=nil, got %d err=%v", lastInsertID, err)
 	}
-	
-	err = mgr.Del(db, &[]map[string]interface{}{{"key":"id", "op":"=", "value":lastInsertID}})
+
+	err = mgr.Del(db, &[]map[string]interface{}{{"key": "id", "op": "=", "value": lastInsertID}})
 	if err != nil {
 		t.Errorf("expected Mgr.Del() err=nil, got %v", err)
 	}
 
 	var accounts []Account
-	err = mgr.Gets(db, &accounts, nil, &[]map[string]interface{}{{"key":"id", "op":"=", "value":lastInsertID}}, 1)
+	err = mgr.Gets(db, &accounts, nil, &[]map[string]interface{}{{"key": "id", "op": "=", "value": lastInsertID}}, 1)
 	cnt := len(accounts)
 	if err != nil || cnt != 0 {
 		t.Errorf("expected Get err=nil cnt=0, got %v %d", err, cnt)
 	}
-	
+
 	tearDown(mgr)
 }
-
-
 
 func TestSearch(t *testing.T) {
 	mgr := NewAccountProxy()
@@ -224,7 +219,7 @@ func TestSearch(t *testing.T) {
 
 	tearDown(mgr)
 	setUp(mgr)
-	
+
 	mobilenoExpected := "13800138000"
 
 	// Test Create
@@ -236,7 +231,7 @@ func TestSearch(t *testing.T) {
 	if err != nil || lastInsertID <= 0 {
 		t.Errorf("expected LastInsertId lastInsertID>0 err=nil, got %d %v", lastInsertID, err)
 	}
-	
+
 	accounts := []Account{}
 	err = mgr.Search(db, &accounts, nil, nil, &map[string]interface{}{"mobileno": "1380"}, 1)
 	cnt := len(accounts)
