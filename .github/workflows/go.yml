@@ -26,16 +26,7 @@ jobs:
         mysql version: '8.0' 
         mysql database: 'test' 
         mysql root password: 'root'
-        
-    - name: Create DB
-      run: mysql -hlocalhost -uroot -proot -e "CREATE DATABASE IF NOT EXISTS test;"     
-      
-    - name: Create User
-      run: mysql -hlocalhost -uroot -proot -e "CREATE USER 'test'@'127.0.0.1' IDENTIFIED BY 'test';"    
-      
-    - name: Grant Privileges
-      run: mysql -hlocalhost -uroot -proot -e "GRANT ALL PRIVILEGES ON `test`.* TO  'test'@'127.0.0.1';"     
-
+         
     - name: Set up Go 1.13
       uses: actions/setup-go@v1
       with:
