@@ -1,5 +1,7 @@
 # About
 
+![Go](https://github.com/giant-stone/go/workflows/Go/badge.svg?branch=master)
+
 giant-stone/go is a Go library which provides utility functions for common programming tasks.
 Confirm to https://en.wikipedia.org/wiki/Don%27t_repeat_yourself
 
