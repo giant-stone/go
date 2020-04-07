@@ -13,6 +13,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+    - name: Shutdown Ubuntu MySQL (SUDO)
+      run: sudo service mysql stop 
+
+    - name: Setup MySQL
+      uses: mirromutth/mysql-action@v1.1
+      with:
+        host port: 3306 
+        container port: 3306
+        character set server: 'utf8mb4'
+        collation server: 'utf8mb4_general_ci'
+        mysql version: '8.0' 
+        mysql database: 'test' 
+        mysql root password: 'root'
+         
     - name: Set up Go 1.13
       uses: actions/setup-go@v1
       with:
@@ -30,5 +44,6 @@ jobs:
             dep ensure
         fi
 
-    - name: Build
-      run: go build -v .
+    - name: Test
+      run: go test ./...
+  
