@@ -3,8 +3,6 @@ package gsql
 
 import (
 	"database/sql"
-	"database/sql/driver"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -13,7 +11,6 @@ import (
 	"time"
 
 	"github.com/go-sql-driver/mysql"
-	_ "github.com/lib/pq"
 
 	"github.com/jmoiron/sqlx"
 
@@ -21,8 +18,8 @@ import (
 )
 
 var (
-	ErrRecordNotFound      = errors.New("record not found")
-	ErrDuplicatedUniqueKey = errors.New("duplicated unique key")
+	ErrRecordNotFound           = errors.New("record not found")
+	ErrDuplicatedUniqueKey      = errors.New("duplicated unique key")
 	ErrQueryOrArgumentIsInvalid = errors.New("query or argument is invalid")
 )
 
@@ -32,7 +29,7 @@ type GS interface {
 
 // GSql contains database connection settings and info.
 type GSql struct {
-	// DriverName Go SQL driver name, such as "mysql" "postgres"
+	// DriverName Go SQL driver name, such as "mysql"
 	DriverName string
 
 	// Dsn is short for Data source name, such as "test:test@tcp(127.0.0.1:3306)/test?charset=utf8mb4,utf8&timeout=2s&writeTimeout=2s&readTimeout=2s&parseTime=true"
@@ -345,7 +342,7 @@ func (its *GSql) Search(
 
 // CreateOrUpdate insert a record or update record(s).
 func (its *GSql) CreateOrUpdate(
-	db *sqlx.DB, 
+	db *sqlx.DB,
 	m *map[string]interface{},
 ) (result sql.Result, err error) {
 	if db == nil {
@@ -463,16 +460,6 @@ func (its *GSql) Creates(db *sqlx.DB, items *[]map[string]interface{}) (result s
 			v := itemMap[k]
 
 			switch v.(type) {
-			case map[string]interface{}:
-				{
-
-					var j JSONB
-					for key, value := range v.(map[string]interface{}) {
-						j[key] = value
-					}
-
-					args = append(args, j)
-				}
 			default:
 				{
 					args = append(args, v)
@@ -481,8 +468,6 @@ func (its *GSql) Creates(db *sqlx.DB, items *[]map[string]interface{}) (result s
 
 			if its.DriverName == "mysql" {
 				placeholders = append(placeholders, "?")
-			} else if its.DriverName == "postgres" {
-				placeholders = append(placeholders, fmt.Sprintf("$%d", i))
 			} else {
 				err = errors.New("got unsupport driver " + its.DriverName)
 				return
@@ -595,7 +580,6 @@ func parseStructFieldTag(tt reflect.Type, tags *[]string, tagName string) {
 	}
 }
 
-
 // GetColumns returns query columns from tag `db` in strutt.
 // Example GetColumns(&myObj{})
 func (its *GSql) GetColumns(obj interface{}) []string {
@@ -652,42 +636,6 @@ func (its *GSql) SearchFullText(
 
 	err = db.Select(objs, s, args...)
 	return
-}
-
-// JSONB maps PostgreSQL JSONB type into `map` in Go.
-// See also http://coussej.github.io/2016/02/16/Handling-JSONB-in-Go-Structs/
-type JSONB map[string]interface{}
-
-// Value convert value from map[string]interface{} into []byte for PostgreSQL JSONB
-func (p JSONB) Value() (driver.Value, error) {
-	j, err := json.Marshal(p)
-	return j, err
-}
-
-// Scan convert value from PostgreSQL JSONB into map[string]interface{}
-func (p *JSONB) Scan(src interface{}) error {
-	source, ok := src.([]byte)
-	if !ok {
-		return errors.New("Type assertion .([]byte) failed.")
-	}
-
-	// walk around issue `NULL`
-	if len(source) == 4 && string(source) == "null" {
-		return nil
-	}
-
-	var i interface{}
-	err := json.Unmarshal(source, &i)
-	if err != nil {
-		return err
-	}
-
-	*p, ok = i.(map[string]interface{})
-	if !ok {
-		return errors.New("Type assertion .(map[string]interface{}) failed.")
-	}
-
-	return nil
 }
 
 // Update update records with where conditions.
