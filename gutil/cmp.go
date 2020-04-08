@@ -49,7 +49,27 @@ func CmpExpectedGot(t *testing.T, key, expI, gotI interface{}) {
 		}
 
 	case "uint8":
+		{
+			exp := expI.(uint8)
+			got := gotI.(uint8)
+
+			if exp != got {
+				t.Errorf("%+q expected=%d got=%d", key, exp, got)
+			}
+			break
+		}
+
 	case "uint16":
+		{
+			exp := expI.(uint16)
+			got := gotI.(uint16)
+
+			if exp != got {
+				t.Errorf("%+q expected=%d got=%d", key, exp, got)
+			}
+			break
+		}
+
 	case "int":
 	case "int64":
 		{
