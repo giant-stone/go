@@ -21,7 +21,7 @@ func CmpExpectedGot(t *testing.T, key, expI, gotI interface{}) {
 			got := gotI.(string)
 
 			if exp != got {
-				t.Errorf("%+q expected=-%s- got=-%s-", key, exp, got)
+				t.Errorf("%+q expected=-%+q- -%s- got=-%+q- -%s-", key, exp, exp, got, got)
 			}
 			break
 		}

@@ -3,6 +3,7 @@ package gsql
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -384,6 +385,57 @@ func (its *GSql) CreateOrUpdate(
 
 	return
 }
+
+// CreateOrUpdateFromStruct insert a record or update record(s) by a struct.
+func (its *GSql) CreateOrUpdateFromStruct(
+	db *sqlx.DB,
+	t interface{},
+) (result sql.Result, err error) {
+	if db == nil {
+		db, err = its.OpenDB()
+		if err != nil {
+			return
+		}
+		defer db.Close()
+	}
+
+	m := map[string]interface{}{}
+	b, _ := json.Marshal(t)
+	_ = json.Unmarshal(b, &m)
+	
+
+	createKeys := []string{}
+	createValuesPlaceholder := []string{}
+	updates := []string{}
+
+	for k := range m {
+		createKeys = append(createKeys, k)
+		createValuesPlaceholder = append(createValuesPlaceholder, fmt.Sprintf(":%s", k))
+		updates = append(updates, fmt.Sprintf("%s=:%s", k, k))
+
+	}
+
+	s := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s) ON DUPLICATE KEY UPDATE %s",
+		its.TableName,
+		strings.Join(createKeys, ","),
+		strings.Join(createValuesPlaceholder, ","),
+		strings.Join(updates, ","),
+	)
+	if its.Debug {
+		log.Println("[debug] sql", s, m)
+	}
+	result, err = db.NamedExec(s, m)
+	if err != nil {
+		if mysqlError, ok := err.(*mysql.MySQLError); ok {
+			if mysqlError.Number == 1062 {
+				err = ErrDuplicatedUniqueKey
+			}
+		}
+	}
+
+	return
+}
+
 
 // Create insert one record.
 func (its *GSql) Create(db *sqlx.DB, creates *map[string]interface{}) (result sql.Result, err error) {

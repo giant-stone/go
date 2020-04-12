@@ -141,8 +141,10 @@ func (its *HttpRequest) Send() (err error) {
 		req.Header.Set(k, fmt.Sprintf("%v", v))
 	}
 
-	if its.UseRandomUserAgent {
-		req.Header.Set("User-Agent", gutil.RandChoice(UserAgents).(string))
+	if req.Header.Get("User-Agent") == "" {
+		if its.UseRandomUserAgent {
+			req.Header.Set("User-Agent", gutil.RandChoice(UserAgents).(string))
+		}
 	}
 
 	start := time.Now()
