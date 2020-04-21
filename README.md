@@ -12,7 +12,8 @@ Confirm to https://en.wikipedia.org/wiki/Don%27t_repeat_yourself
 
 
 
-ghttp - HTTP client wrapper in Method chaining   
+ghttp - HTTP client wrapper in Method chaining
+ghttpcache - caching ghttp response in process memory or Redis
 gsql - SQL CRUD and search wrapper
 
 
