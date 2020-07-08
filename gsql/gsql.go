@@ -263,7 +263,7 @@ func (its *GSql) GetsWhere(
 	}
 
 	if orCount > 0 {
-		wheres = append(wheres, "or 0)")
+		wheres = append(wheres, "0)")
 	} else {
 		wheres = append(wheres, "1=1")
 	}
