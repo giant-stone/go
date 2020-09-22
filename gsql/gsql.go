@@ -402,7 +402,6 @@ func (its *GSql) CreateOrUpdateFromStruct(
 	m := map[string]interface{}{}
 	b, _ := json.Marshal(t)
 	_ = json.Unmarshal(b, &m)
-	
 
 	createKeys := []string{}
 	createValuesPlaceholder := []string{}
@@ -435,7 +434,6 @@ func (its *GSql) CreateOrUpdateFromStruct(
 
 	return
 }
-
 
 // Create insert one record.
 func (its *GSql) Create(db *sqlx.DB, creates *map[string]interface{}) (result sql.Result, err error) {
@@ -721,21 +719,42 @@ func (its *GSql) Update(
 	}
 
 	for _, item := range *conditionsWhere {
-		// hard-coded fix pass `is/is not null` condition
-		v, ok := item["value"].(string)
-		if ok && v == "null" {
-			cond := fmt.Sprintf("%v %v null",
-				item["key"],
-				item["op"],
-			)
-			wheres = append(wheres, cond)
-		} else {
-			cond := fmt.Sprintf("%v %v ?",
-				item["key"],
-				item["op"],
-			)
-			wheres = append(wheres, cond)
-			args = append(args, item["value"])
+		tname := reflect.TypeOf(item["value"]).String()
+		switch tname {
+		case "string":
+			{
+				// hard-coded fix pass `is/is not null` condition
+				if tname == "null" {
+					cond := fmt.Sprintf("%v %v null",
+						item["key"],
+						item["op"],
+					)
+					wheres = append(wheres, cond)
+					break
+				}
+			}
+		case "[]string":
+			{
+				// hard-coded fix pass `in/not in (arg1, arg2, ...)` condition
+				cond := fmt.Sprintf("%v %v (?)",
+					item["key"],
+					item["op"],
+				)
+				wheres = append(wheres, cond)
+				v := item["value"].([]string)
+				args = append(args, strings.Join(v, ","))
+				break
+			}
+		default:
+			{
+				cond := fmt.Sprintf("%v %v ?",
+					item["key"],
+					item["op"],
+				)
+				wheres = append(wheres, cond)
+				args = append(args, item["value"])
+				break
+			}
 		}
 	}
 
