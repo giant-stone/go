@@ -17,7 +17,7 @@ import (
 )
 
 type HttpRequest struct {
-	Debug bool
+	Debug   bool
 	Timeout time.Duration
 
 	Method  string
@@ -32,6 +32,7 @@ type HttpRequest struct {
 
 	RespStatus int
 	RespBody   []byte
+	RespHeader http.Header
 	Elapsed    time.Duration
 }
 
@@ -158,6 +159,8 @@ func (its *HttpRequest) Send() (err error) {
 	defer resp.Body.Close()
 
 	its.RespStatus = resp.StatusCode
+	its.RespHeader = resp.Header
+
 	RespBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return
