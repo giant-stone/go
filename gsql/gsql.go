@@ -154,21 +154,42 @@ func (its *GSql) Gets(
 	}
 	args := []interface{}{}
 	for _, item := range *conditionsWhere {
-		// hard-coded fix pass `is/is not null` condition
-		v, ok := item["value"].(string)
-		if ok && v == "null" {
-			cond := fmt.Sprintf("%v %v null",
-				item["key"],
-				item["op"],
-			)
-			wheres = append(wheres, cond)
-		} else {
-			cond := fmt.Sprintf("%v %v ?",
-				item["key"],
-				item["op"],
-			)
-			wheres = append(wheres, cond)
-			args = append(args, item["value"])
+		tname := reflect.TypeOf(item["value"]).String()
+		switch tname {
+		case "string":
+			{
+				// hard-coded fix pass `is/is not null` condition
+				if tname == "null" {
+					cond := fmt.Sprintf("%v %v null",
+						item["key"],
+						item["op"],
+					)
+					wheres = append(wheres, cond)
+					break
+				}
+			}
+		case "[]string":
+			{
+				// hard-coded fix pass `in/not in (arg1, arg2, ...)` condition
+				cond := fmt.Sprintf("%v %v (?)",
+					item["key"],
+					item["op"],
+				)
+				wheres = append(wheres, cond)
+				v := item["value"].([]string)
+				args = append(args, strings.Join(v, ","))
+				break
+			}
+		default:
+			{
+				cond := fmt.Sprintf("%v %v ?",
+					item["key"],
+					item["op"],
+				)
+				wheres = append(wheres, cond)
+				args = append(args, item["value"])
+				break
+			}
 		}
 	}
 
