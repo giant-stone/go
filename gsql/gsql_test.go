@@ -109,6 +109,17 @@ func TestCreate(t *testing.T) {
 		t.Errorf("expected Gets cnt>0 err=gsql.ErrRecordNotFound, got %d %v", cnt, err)
 	}
 
+	conditionsWhere := []map[string]interface{}{
+		{"key": "mobileno", "op": "like", "value": "%3800%"},
+		{"key": "mobileno", "op": "in", "value": []string{"13800138000"}},
+		{"key": "mobileno", "op": "is not", "value": "null"},
+	}
+	err = mgr.Gets(db, &accounts, nil, &conditionsWhere, 1)
+	cnt = len(accounts)
+	if err == gsql.ErrRecordNotFound || cnt == 0 {
+		t.Errorf("expected Gets err=nil cnt=0, got %v cnt=%d", err, cnt)
+	}
+
 	accountGot := accounts[0]
 	if accountGot.Mobileno != mobilenoExpected || accountGot.Password != "" {
 		t.Errorf(`expected Gets password="", got %v`, accountGot.Password)
@@ -254,6 +265,55 @@ func TestSearch(t *testing.T) {
 	cnt = len(accountsMiss)
 	if cnt != 0 {
 		t.Errorf("expected Search len(objs)=0, got %d", cnt)
+	}
+
+	tearDown(mgr)
+}
+
+func TestUpdate(t *testing.T) {
+	mgr := NewAccountProxy()
+	db := mgr.MustOpenDB()
+	defer db.Close()
+
+	tearDown(mgr)
+	setUp(mgr)
+
+	mobilenoExpected := "13800138000"
+
+	// Test Create
+	result, err := mgr.Create(db, &map[string]interface{}{"mobileno": mobilenoExpected})
+	if err != nil {
+		t.Errorf("expected CreateOrUpdate err=nil, got %v", err)
+	}
+	lastInsertID, err := result.LastInsertId()
+	if err != nil || lastInsertID <= 0 {
+		t.Errorf("expected LastInsertId lastInsertID>0 err=nil, got %d %v", lastInsertID, err)
+	}
+
+	// Test Update
+	conditionsWhere := []map[string]interface{}{
+		{"key": "mobileno", "op": "like", "value": "%3800%"},
+		{"key": "mobileno", "op": "in", "value": []string{"13800138000"}},
+		{"key": "mobileno", "op": "is not", "value": "null"},
+	}
+	result, err = mgr.Update(db, &conditionsWhere, &map[string]interface{}{"password": "1111",})
+	if err != nil {
+		t.Errorf("expected Update err=nil, got %v", err)
+	}
+	row, err := result.RowsAffected()
+	if err != nil || row <= 0 {
+		t.Errorf("expected RowsAffected RowsAffected>0 err=nil, got %d %v", row, err)
+	}
+
+	var accounts []Account
+	err = mgr.Gets(db, &accounts, nil, &[]map[string]interface{}{{"key": "id", "op": "=", "value": lastInsertID}}, 1)
+	cnt := len(accounts)
+	if err == gsql.ErrRecordNotFound || cnt == 0 {
+		t.Errorf("expected Gets cnt>0 err=gsql.ErrRecordNotFound, got %d %v", cnt, err)
+	}
+	accountGot := accounts[0]
+	if accountGot.Mobileno != mobilenoExpected || accountGot.Password != "1111" {
+		t.Errorf(`expected Gets password="", got %v`, accountGot.Password)
 	}
 
 	tearDown(mgr)
