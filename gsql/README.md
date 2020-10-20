@@ -1,28 +1,28 @@
 # About
 
 GSql is github.com/jmoiron/sqlx CRUD wrapper:
-
- - Gets - query record(s) with where AND conditions
  - GetsWhere - query record(s) with mixed AND/OR where conditions
  - Create - insert a record
- - Creates - insert records in bulk
- - CreateOrUpdate - create or update record(s)
- - Update update record(s)
+ - BulkCreateOrUpdate - create or update record(s) in bulk
  - Del - delete record(s)
 
 Search
-
  - Search - query records with where EQUAL(=) and LIKE conditions
  - SearchFullText - query records with MySQL fulltext index
 
 Misc
-
  - RawQuery - custom query SQL and arguments
  - RawExec
  - GetColumns - auto compose xx in `SELECT xx from ...`
 
 
-For more detail about example, see `gsql_test.go` .
+DEPRECATED.
+ - Gets - query record(s) with where AND conditions
+ - Creates - insert records in bulk
+ - CreateOrUpdate - create or update record(s)
+ - Update update record(s)
+
+For more detail about example, see `gsql_test.go` `bulk_test.go` .
 
 Install 
 

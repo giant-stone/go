@@ -1,18 +1,31 @@
 // Simple tests.
+//
+// Issue following grants before run this script
+//
+//   reset root password
+//     mysqladmin -hlocalhost -uroot password
+//
+//   grants root user to create database
+//     create user if not exists 'root'@'127.0.0.1' identified by 'root';
+//     grant all on *.* to 'root'@'127.0.0.1';
+//
 package gsql_test
 
 import (
 	"log"
 	"os"
-	"strings"
 	"testing"
+
+	"github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
 
 	"github.com/giant-stone/go/gsql"
 )
 
 var (
-	sqlCreateDb    = `CREATE DATABASE IF NOT EXISTS test;`
-	sqlCreateTable = `CREATE TABLE IF NOT EXISTS test_gsql (
+	sqlCreateDb    = `CREATE DATABASE IF NOT EXISTS testgsql;`
+	sqlUseDb       = `USE testgsql;`
+	sqlCreateTable = `CREATE TABLE IF NOT EXISTS testusers (
 	id int not null AUTO_INCREMENT,
 	mobileno varchar(255) default '',
 	password varchar(255) default '',
@@ -20,33 +33,30 @@ var (
 	PRIMARY KEY (id)
 ); `
 
-	sqlDropTable = `DROP TABLE IF EXISTS test_gsql;`
+	sqlDropDb = `DROP DATABASE IF EXISTS testgsql;`
 )
 
-func tearDown(mgr *AccountProxy) {
-	db, err := mgr.OpenDB()
+func tearDown(db *sqlx.DB) {
+	_, err := db.Exec(sqlDropDb)
 	if err != nil {
-		log.Fatalln("[fatal] mgr.OpenDB", err)
-	}
-	defer db.Close()
-	_, err = db.Exec(sqlDropTable)
-	if err != nil {
-		if strings.Index(err.Error(), "Unknown table") != -1 {
-			// drop a table not exists, safe to skip
-		} else {
-			log.Fatalln("[fatal] db.Exec", err)
+		if mysqlError, ok := err.(*mysql.MySQLError); ok {
+			errorUnknownDatabase := uint16(1049)
+			if mysqlError.Number == errorUnknownDatabase {
+				return
+			}
 		}
+
+		log.Fatalln("[fatal] db.Exec", err)
 	}
 }
 
-func setUp(mgr *AccountProxy) {
-	db, err := mgr.OpenDB()
+func setUp(db *sqlx.DB) {
+	_, err := db.Exec(sqlCreateDb)
 	if err != nil {
-		log.Fatalln("[fatal] mgr.OpenDB", err)
+		log.Fatalln("[fatal] db.Exec", err)
 	}
-	defer db.Close()
 
-	_, err = db.Exec(sqlCreateDb)
+	_, err = db.Exec(sqlUseDb)
 	if err != nil {
 		log.Fatalln("[fatal] db.Exec", err)
 	}
@@ -57,266 +67,24 @@ func setUp(mgr *AccountProxy) {
 	}
 }
 
-type Account struct {
-	ID       uint64 `json:"id" db:"id"`
+type account struct {
+	Id       int    `json:"id" db:"id"`
 	Mobileno string `json:"mobileno" db:"mobileno"`
 	Password string `json:"password" db:"password"`
 }
 
-type AccountProxy struct {
+type accountProxy struct {
 	gsql.GSql
 }
 
-func NewAccountProxy() *AccountProxy {
-	p := AccountProxy{}
+func newAccountProxy() *accountProxy {
+	p := accountProxy{}
 	p.DriverName = "mysql"
 	p.Debug = true
-	p.Dsn = "root:root@tcp(127.0.0.1:3306)/test?charset=utf8mb4,utf8&timeout=2s&writeTimeout=2s&readTimeout=2s&parseTime=true"
-	p.TableName = "test_gsql"
-	p.Columns = p.GetColumns(&Account{})
+	p.Dsn = "root:root@tcp(127.0.0.1:3306)/?charset=utf8mb4,utf8&timeout=2s&writeTimeout=2s&readTimeout=2s&parseTime=true"
+	p.TableName = "testusers"
+	p.Columns = p.GetColumns(&account{})
 	return &p
-}
-
-func TestCreate(t *testing.T) {
-	mgr := NewAccountProxy()
-	db := mgr.MustOpenDB()
-	defer db.Close()
-
-	tearDown(mgr)
-	setUp(mgr)
-
-	var accounts []Account
-	mobilenoExpected := "13800138000"
-
-	err := mgr.Gets(db, &accounts, nil, &[]map[string]interface{}{{"key": "id", "op": "=", "value": 1}}, 1)
-	cnt := len(accounts)
-	if err != nil || cnt > 0 {
-		t.Errorf("expected Gets err=nil cnt=0, got %v cnt=%d", err, cnt)
-	}
-
-	result, err := mgr.Create(db, &map[string]interface{}{"mobileno": mobilenoExpected})
-	if err != nil {
-		t.Errorf("expected Create err=nil, got %v", err)
-	}
-	lastInsertID, err := result.LastInsertId()
-	if err != nil || lastInsertID <= 0 {
-		t.Errorf("expected LastInsertId lastInsertID>0 err=nil, got %d err=%v", lastInsertID, err)
-	}
-
-	err = mgr.Gets(db, &accounts, nil, &[]map[string]interface{}{{"key": "id", "op": "=", "value": lastInsertID}}, 1)
-	cnt = len(accounts)
-	if err == gsql.ErrRecordNotFound || cnt == 0 {
-		t.Errorf("expected Gets cnt>0 err=gsql.ErrRecordNotFound, got %d %v", cnt, err)
-	}
-
-	conditionsWhere := []map[string]interface{}{
-		{"key": "mobileno", "op": "like", "value": "%3800%"},
-		{"key": "mobileno", "op": "in", "value": []string{"13800138000"}},
-		{"key": "mobileno", "op": "is not", "value": "null"},
-	}
-	err = mgr.Gets(db, &accounts, nil, &conditionsWhere, 1)
-	cnt = len(accounts)
-	if err == gsql.ErrRecordNotFound || cnt == 0 {
-		t.Errorf("expected Gets err=nil cnt=0, got %v cnt=%d", err, cnt)
-	}
-
-	accountGot := accounts[0]
-	if accountGot.Mobileno != mobilenoExpected || accountGot.Password != "" {
-		t.Errorf(`expected Gets password="", got %v`, accountGot.Password)
-	}
-
-	_, err = mgr.Create(db, &map[string]interface{}{"mobileno": mobilenoExpected})
-	if err != gsql.ErrDuplicatedUniqueKey {
-		t.Errorf("expected Create err=ErrDuplicatedUniqueKey, got %v", err)
-	}
-
-	tearDown(mgr)
-}
-
-func TestGets(t *testing.T) {
-	TestCreate(t)
-}
-
-func TestCreateOrUpdate(t *testing.T) {
-	mgr := NewAccountProxy()
-	db := mgr.MustOpenDB()
-	defer db.Close()
-
-	tearDown(mgr)
-	setUp(mgr)
-
-	var accounts []Account
-
-	m := map[string]interface{}{"mobileno": "13800138000"}
-	result, err := mgr.CreateOrUpdate(db, &m)
-	if err != nil {
-		t.Errorf("expected CreateOrUpdate err=nil, got %v", err)
-	}
-	lastInsertID, err := result.LastInsertId()
-	if err != nil || lastInsertID <= 0 {
-		t.Errorf("expected LastInsertId lastInsertID>0, got lastInsertId=%d err=%v", lastInsertID, err)
-	}
-
-	passwordNew := "secret"
-	mUpdates := map[string]interface{}{
-		"id":       lastInsertID,
-		"password": passwordNew,
-	}
-	result, err = mgr.CreateOrUpdate(db, &mUpdates)
-	if err != nil {
-		t.Errorf("expected CreateOrUpdate err=nil, got%v", err)
-	}
-
-	lastInsertID, err = result.LastInsertId()
-	if err != nil || lastInsertID <= 0 {
-		t.Errorf(`expected CreateOrUpdate lastInsertID>0 err=nil, got %d %v`, lastInsertID, err)
-	}
-
-	rowsAffected, err := result.RowsAffected()
-	if err != nil || rowsAffected <= 0 {
-		t.Errorf(`expected CreateOrUpdate rowsAffected>0 err=nil, got %d %v`, rowsAffected, err)
-	}
-
-	err = mgr.Gets(db, &accounts, nil, &[]map[string]interface{}{{"key": "id", "op": "=", "value": lastInsertID}}, 1)
-	cnt := len(accounts)
-	if err != nil || cnt != 1 {
-		t.Errorf("expected Gets err=nil cnt=1, got %v %d", err, cnt)
-	}
-	account := accounts[0]
-	if account.Password != passwordNew {
-		t.Errorf("expected password=%s, got %s", passwordNew, account.Password)
-	}
-
-	tearDown(mgr)
-}
-
-func TestDel(t *testing.T) {
-	mgr := NewAccountProxy()
-	db := mgr.MustOpenDB()
-	defer db.Close()
-
-	tearDown(mgr)
-	setUp(mgr)
-
-	mobilenoExpected := "13800138000"
-	result, err := mgr.Create(db, &map[string]interface{}{"mobileno": mobilenoExpected})
-	if err != nil {
-		t.Errorf("expected Create err=nil, got %v", err)
-	}
-	lastInsertID, err := result.LastInsertId()
-	if err != nil || lastInsertID <= 0 {
-		t.Errorf("expected LastInsertId lastInsertID>0 err=nil, got %d err=%v", lastInsertID, err)
-	}
-
-	err = mgr.Del(db, &[]map[string]interface{}{{"key": "id", "op": "=", "value": lastInsertID}})
-	if err != nil {
-		t.Errorf("expected Mgr.Del() err=nil, got %v", err)
-	}
-
-	var accounts []Account
-	err = mgr.Gets(db, &accounts, nil, &[]map[string]interface{}{{"key": "id", "op": "=", "value": lastInsertID}}, 1)
-	cnt := len(accounts)
-	if err != nil || cnt != 0 {
-		t.Errorf("expected Get err=nil cnt=0, got %v %d", err, cnt)
-	}
-
-	tearDown(mgr)
-}
-
-func TestSearch(t *testing.T) {
-	mgr := NewAccountProxy()
-	db := mgr.MustOpenDB()
-	defer db.Close()
-
-	tearDown(mgr)
-	setUp(mgr)
-
-	mobilenoExpected := "13800138000"
-
-	// Test Create
-	result, err := mgr.Create(db, &map[string]interface{}{"mobileno": mobilenoExpected})
-	if err != nil {
-		t.Errorf("expected CreateOrUpdate err=nil, got %v", err)
-	}
-	lastInsertID, err := result.LastInsertId()
-	if err != nil || lastInsertID <= 0 {
-		t.Errorf("expected LastInsertId lastInsertID>0 err=nil, got %d %v", lastInsertID, err)
-	}
-
-	accounts := []Account{}
-	err = mgr.Search(db, &accounts, nil, nil, &map[string]interface{}{"mobileno": "1380"}, 1)
-	cnt := len(accounts)
-	if err != nil || cnt != 1 {
-		t.Errorf("expected Search err=nil cnt=1, got %v %d", err, cnt)
-	}
-
-	account := accounts[0]
-
-	if account.Mobileno != mobilenoExpected {
-		t.Errorf("expected mobileno=%s, got %s", mobilenoExpected, account.Mobileno)
-	}
-
-	var accountsMiss = []Account{}
-	err = mgr.Search(db, &accountsMiss, nil, nil, &map[string]interface{}{"mobileno": "8888"}, 1)
-	if err != nil {
-		t.Errorf("expected Search err=nil, got %v", err)
-	}
-
-	cnt = len(accountsMiss)
-	if cnt != 0 {
-		t.Errorf("expected Search len(objs)=0, got %d", cnt)
-	}
-
-	tearDown(mgr)
-}
-
-func TestUpdate(t *testing.T) {
-	mgr := NewAccountProxy()
-	db := mgr.MustOpenDB()
-	defer db.Close()
-
-	tearDown(mgr)
-	setUp(mgr)
-
-	mobilenoExpected := "13800138000"
-
-	// Test Create
-	result, err := mgr.Create(db, &map[string]interface{}{"mobileno": mobilenoExpected})
-	if err != nil {
-		t.Errorf("expected CreateOrUpdate err=nil, got %v", err)
-	}
-	lastInsertID, err := result.LastInsertId()
-	if err != nil || lastInsertID <= 0 {
-		t.Errorf("expected LastInsertId lastInsertID>0 err=nil, got %d %v", lastInsertID, err)
-	}
-
-	// Test Update
-	conditionsWhere := []map[string]interface{}{
-		{"key": "mobileno", "op": "like", "value": "%3800%"},
-		{"key": "mobileno", "op": "in", "value": []string{"13800138000"}},
-		{"key": "mobileno", "op": "is not", "value": "null"},
-	}
-	result, err = mgr.Update(db, &conditionsWhere, &map[string]interface{}{"password": "1111",})
-	if err != nil {
-		t.Errorf("expected Update err=nil, got %v", err)
-	}
-	row, err := result.RowsAffected()
-	if err != nil || row <= 0 {
-		t.Errorf("expected RowsAffected RowsAffected>0 err=nil, got %d %v", row, err)
-	}
-
-	var accounts []Account
-	err = mgr.Gets(db, &accounts, nil, &[]map[string]interface{}{{"key": "id", "op": "=", "value": lastInsertID}}, 1)
-	cnt := len(accounts)
-	if err == gsql.ErrRecordNotFound || cnt == 0 {
-		t.Errorf("expected Gets cnt>0 err=gsql.ErrRecordNotFound, got %d %v", cnt, err)
-	}
-	accountGot := accounts[0]
-	if accountGot.Mobileno != mobilenoExpected || accountGot.Password != "1111" {
-		t.Errorf(`expected Gets password="", got %v`, accountGot.Password)
-	}
-
-	tearDown(mgr)
 }
 
 func TestMain(m *testing.M) {
