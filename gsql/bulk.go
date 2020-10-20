@@ -15,8 +15,7 @@ import (
 // BulkCreateOrUpdate create or update record(s) in bulk
 func (it *GSql) BulkCreateOrUpdate(
 	db *sqlx.DB,
-	// objs map[string]*map[string]interface{},
-	objs map[string]interface{},
+	objs []interface{},
 ) (rowsAffected int64, err error) {
 	if db == nil {
 		db, err = it.OpenDB()
@@ -25,6 +24,8 @@ func (it *GSql) BulkCreateOrUpdate(
 		}
 		defer db.Close()
 	}
+
+	batchSize := 500
 
 	var columns []string
 	var args []interface{}
@@ -39,31 +40,46 @@ func (it *GSql) BulkCreateOrUpdate(
 
 	var placeholderInsertOne string
 
-	var skipPk string
-	for pk, obj := range objs {
+	obj :=  objs[0]
 		_obj, isMap := obj.(*map[string]interface{})
 		if !isMap {
 			_obj = gutil.Struct2map(obj)
 		}
 
-		skipPk = pk
 		for k, v := range *_obj {
 			columns = append(columns, k)
 			args = append(args, v)
 			placeholdersValue = append(placeholdersValue, "?")
 			placeholderUpdateOne = append(placeholderUpdateOne, fmt.Sprintf("%s=values(%s)", k, k))
 		}
-		break
-	}
+
 
 	placeholderInsertOne = "( " + strings.Join(placeholdersValue, ", ") + " )"
 	placeholdersInsertAll = append(placeholdersInsertAll, placeholderInsertOne)
 
-	for pk, obj := range objs {
-		if pk == skipPk {
-			continue
-		}
+	total := len(objs)
+	i := 1
+	for ; i < total && i +batchSize < cap(objs); i+= batchSize {
+		for _, obj := range objs[i:i+batchSize] {
+			_obj, isMap := obj.(*map[string]interface{})
+			if !isMap {
+				_obj = gutil.Struct2map(obj)
+			}
 
+			for _, k := range columns {
+				v, ok := (*_obj)[k]
+				if !ok {
+					log.Printf("[warn] skip for key not found, key=%s obj=%v", k, _obj)
+					continue
+				}
+				args = append(args, v)
+			}
+
+			placeholdersInsertAll = append(placeholdersInsertAll, placeholderInsertOne)
+		}
+	}
+
+	for _, obj := range objs[i:] {
 		_obj, isMap := obj.(*map[string]interface{})
 		if !isMap {
 			_obj = gutil.Struct2map(obj)
