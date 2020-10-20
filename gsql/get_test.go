@@ -16,10 +16,10 @@ func TestGSql_GetsWhere(t *testing.T) {
 	setUp(db)
 
 	// insert samples
-	changes := map[string]interface{}{
-		"1": account{Id: 1, Mobileno: "12345", Password: "12345"},
-		"2": account{Id: 2, Mobileno: "10000", Password: "10000"},
-		"3": account{Id: 3, Mobileno: "9999", Password: "9999"},
+	changes := []interface{}{
+		account{Id: 1, Mobileno: "12345", Password: "12345"},
+		account{Id: 2, Mobileno: "10000", Password: "10000"},
+		account{Id: 3, Mobileno: "9999", Password: "9999"},
 	}
 	_, err = mgr.BulkCreateOrUpdate(db, changes)
 	gutil.ExitOnErr(err)
