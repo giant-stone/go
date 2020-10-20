@@ -17,10 +17,10 @@ func TestBulkCreateOrUpdateWithPk(t *testing.T) {
 	setUp(db)
 
 	// insertSamples
-	changes := map[string]interface{}{
-		"1": account{Id: 1, Mobileno: "12345", Password: "12345"},
-		"2": account{Id: 2, Mobileno: "12345", Password: "12345"},
-		"3": account{Id: 3, Mobileno: "12345", Password: "12345"},
+	changes := []interface{}{
+		account{Id: 1, Mobileno: "12345", Password: "12345"},
+		account{Id: 2, Mobileno: "12345", Password: "12345"},
+		account{Id: 3, Mobileno: "12345", Password: "12345"},
 	}
 
 	_, err = mgr.BulkCreateOrUpdate(db, changes)
@@ -29,10 +29,7 @@ func TestBulkCreateOrUpdateWithPk(t *testing.T) {
 	// update samples
 	obj1 := account{Id: 1, Mobileno: "1111", Password: "111"}
 	obj2 := account{Id: 2, Mobileno: "222", Password: "2222"}
-	changes = map[string]interface{}{
-		"1": obj1,
-		"2": obj2,
-	}
+	changes = []interface{}{obj1, obj2}
 
 	_, err = mgr.BulkCreateOrUpdate(db, changes)
 	if err != nil {
