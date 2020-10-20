@@ -68,7 +68,7 @@ func (its *GSql) GetsWhere(
 			if ok && v == "null" {
 				condExpr := fmt.Sprintf("%v %v null %s",
 					item["key"],
-					item["conditionOperator"],
+					item["op"],
 					conditionOperator,
 				)
 				if orCount == 1 {
@@ -101,7 +101,7 @@ func (its *GSql) GetsWhere(
 						if tname == "null" {
 							cond := fmt.Sprintf("%v %v null %s",
 								item["key"],
-								item["conditionOperator"],
+								item["op"],
 								conditionOperator,
 							)
 							if orCount == 1 {
@@ -112,7 +112,7 @@ func (its *GSql) GetsWhere(
 						} else {
 							cond := fmt.Sprintf("%v %v ? %s",
 								item["key"],
-								item["conditionOperator"],
+								item["op"],
 								conditionOperator,
 							)
 							if orCount == 1 {
