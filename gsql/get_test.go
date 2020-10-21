@@ -24,14 +24,17 @@ func TestGSql_GetsWhere(t *testing.T) {
 		obj2,
 		obj3,
 	}
-	_, err = mgr.BulkCreateOrUpdate(db, changes)
+	_, err = mgr.BulkCreateOrUpdate(db, changes, 100)
 	gutil.ExitOnErr(err)
 
 	// query samples
 	var objsGot []account
 	columns := mgr.GetColumns(&account{})
 	limit := 10000
-	err = mgr.GetsWhere(db, &objsGot, &columns, nil, limit)
+	where := []map[string]interface{}{
+		map[string]interface{}{"key": "id", "op": "in", "value": []interface{}{1, 2, 3}},
+	}
+	err = mgr.GetsWhere(db, &objsGot, &columns, &where, limit)
 	if err != nil {
 		t.Errorf("want GetsWhere err=nil, got %v", err)
 	}
@@ -59,7 +62,7 @@ func TestGSql_GetsWhere(t *testing.T) {
 
 	// query samples
 	objsGot = []account{}
-	where := []map[string]interface{}{
+	where = []map[string]interface{}{
 		map[string]interface{}{"key": "id", "op": "=", "value": 2},
 	}
 	err = mgr.GetsWhere(db, &objsGot, &columns, &where, limit)
