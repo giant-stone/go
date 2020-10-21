@@ -7,7 +7,7 @@ import (
 	"github.com/giant-stone/go/gutil"
 )
 
-func TestBulkCreateOrUpdateWithPk(t *testing.T) {
+func TestGSql_BulkCreateOrUpdate(t *testing.T) {
 	mgr := newAccountProxy()
 	db, err := mgr.OpenDB()
 	gutil.ExitOnErr(err)
@@ -23,7 +23,7 @@ func TestBulkCreateOrUpdateWithPk(t *testing.T) {
 		account{Id: 3, Mobileno: "12345", Password: "12345"},
 	}
 
-	_, err = mgr.BulkCreateOrUpdate(db, changes)
+	_, err = mgr.BulkCreateOrUpdate(db, changes, 2)
 	gutil.ExitOnErr(err)
 
 	// update samples
@@ -31,7 +31,7 @@ func TestBulkCreateOrUpdateWithPk(t *testing.T) {
 	obj2 := account{Id: 2, Mobileno: "222", Password: "2222"}
 	changes = []interface{}{obj1, obj2}
 
-	_, err = mgr.BulkCreateOrUpdate(db, changes)
+	_, err = mgr.BulkCreateOrUpdate(db, changes, 5)
 	if err != nil {
 		t.Errorf("want BulkCreateOrUpdate err=nil, got %v", err)
 	}
