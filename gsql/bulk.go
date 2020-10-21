@@ -16,7 +16,7 @@ func (it *GSql) BulkCreateOrUpdate(
 	db *sqlx.DB,
 	objs []interface{},
 	batchsize int,
-) (rowsAffected int, err error) {
+) (totalWritten int, err error) {
 	if db == nil {
 		db, err = it.OpenDB()
 		if err != nil {
@@ -24,8 +24,6 @@ func (it *GSql) BulkCreateOrUpdate(
 		}
 		defer db.Close()
 	}
-
-	totalWritten := 0
 
 	var columns []string
 	var placeholdersValue []string
@@ -84,8 +82,9 @@ func (it *GSql) BulkCreateOrUpdate(
 		)
 
 		ts := time.Now()
-		result, err := db.Exec(query, args...)
-		if err != nil {
+		result, errExec := db.Exec(query, args...)
+		if errExec != nil {
+			err = errExec
 			break
 		}
 
@@ -98,5 +97,5 @@ func (it *GSql) BulkCreateOrUpdate(
 		totalWritten += int(_totalWritten)
 	}
 
-	return totalWritten, nil
+	return
 }
