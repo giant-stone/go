@@ -38,6 +38,7 @@ type HttpRequest struct {
 
 func New() *HttpRequest {
 	return &HttpRequest{
+		Method:  "GET",
 		Headers: map[string]interface{}{},
 	}
 }
