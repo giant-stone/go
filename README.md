@@ -19,7 +19,7 @@ gsql - SQL CRUD and search wrapper.
 
 ## Examples
 
-### Send a HTTP reqeust in ghttp 
+### Send a HTTP GET request in ghttp
 
 Custom HTTP request timeout, method, proxy and body in [Method chaining](https://en.wikipedia.org/wiki/Method_chaining)
 
@@ -52,4 +52,43 @@ func main() {
 
 	log.Println("process response body ...", len(req.RespBody))
 }
+```
+
+### Send a POST multipart/form-data request in ghttp
+
+```
+	var err error
+
+	rq := ghttp.New().
+		SetDebug(true).
+		SetRequestMethod("POST").
+		SetUri("https://httpbin.org/post").
+		SetTimeout(time.Second * 5)
+
+	var b bytes.Buffer
+	w := multipart.NewWriter(&b)
+
+	err = ghttp.AppendMultipartFormData(w, "myfile", "myfile.data", []byte(`hello 中文`))
+	gutil.ExitOnErr(err)
+
+	err = ghttp.AppendMultipartFormData(w, "myfile2", "myfile2.data", []byte(`foo\nbar`))
+	gutil.ExitOnErr(err)
+
+	err = w.WriteField("id", "123")
+	gutil.ExitOnErr(err)
+
+	err = w.Close()
+	gutil.ExitOnErr(err)
+
+	rqBody := b.Bytes()
+
+	rq.SetPostBody(&rqBody)
+	rq.SetHeader("Content-Type", w.FormDataContentType())
+	err = rq.Send()
+	gutil.ExitOnErr(err)
+
+	log.Println(
+		rq.RespStatus,
+		string(rq.RespBody),
+	)
 ```
