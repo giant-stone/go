@@ -1,5 +1,6 @@
 # Temporary
 .DS_Store
+ignore/
 
 # Binaries for programs and plugins
 *.exe
