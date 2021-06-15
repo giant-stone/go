@@ -40,6 +40,7 @@ func New() *HttpRequest {
 	return &HttpRequest{
 		Method:  "GET",
 		Headers: map[string]interface{}{},
+		Timeout: time.Duration(10) * time.Second,
 	}
 }
 
