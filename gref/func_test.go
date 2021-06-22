@@ -18,7 +18,6 @@ func TestGetFunctionName(t *testing.T) {
 	}
 }
 
-
 func TestMain(m *testing.M) {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	os.Exit(m.Run())
