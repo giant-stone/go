@@ -11,4 +11,3 @@ func Md5(text string) string {
 	algorithm.Write([]byte(text))
 	return hex.EncodeToString(algorithm.Sum(nil))
 }
-

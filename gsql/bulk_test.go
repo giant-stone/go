@@ -41,7 +41,7 @@ func TestGSql_BulkCreateOrUpdate(t *testing.T) {
 	columns := mgr.GetColumns(&account{})
 	limit := 10000
 	where := []map[string]interface{}{
-		map[string]interface{}{"key": "id", "op": "in", "value": []interface{}{"1", "2"}},
+		{"key": "id", "op": "in", "value": []interface{}{"1", "2"}},
 	}
 	err = mgr.GetsWhere(db, &objsGot, &columns, &where, limit)
 	if err != nil {
