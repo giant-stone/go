@@ -2,6 +2,7 @@ package ghttp_test
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"log"
 	"mime/multipart"
@@ -16,7 +17,7 @@ import (
 func ExampleNew() {
 	fullurl := "https://httpbin.org/post"
 	postData := []byte(`{"msg":"hello"}`)
-	req := ghttp.New().
+	req := ghttp.New(context.Background()).
 		SetRandomUserAgent(true).
 		SetTimeout(time.Second * 3).
 		SetRequestMethod("POST").
@@ -29,7 +30,7 @@ func ExampleNew() {
 
 // ExampleHttpRequest_SetPostBody show howto POST in application/x-www-form-urlencoded
 func ExampleHttpRequest_SetPostBody() {
-	rq := ghttp.New().
+	rq := ghttp.New(context.Background()).
 		SetDebug(true).
 		SetRequestMethod("POST").
 		SetUri("https://httpbin.org/post").
@@ -56,7 +57,7 @@ func ExampleHttpRequest_SetPostBody() {
 func ExampleHttpRequest_SetPostBody2() {
 	var err error
 
-	rq := ghttp.New().
+	rq := ghttp.New(context.Background()).
 		SetDebug(true).
 		SetRequestMethod("POST").
 		SetUri("https://httpbin.org/post").
