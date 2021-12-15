@@ -42,7 +42,16 @@ type HttpRequest struct {
 	Elapsed    time.Duration
 }
 
-func New(ctx context.Context) *HttpRequest {
+func New() *HttpRequest {
+	return &HttpRequest{
+		Ctx:     context.Background(),
+		Method:  defaultMethod,
+		Headers: map[string]interface{}{},
+		Timeout: time.Duration(10) * time.Second,
+	}
+}
+
+func NewWithCtx(ctx context.Context) *HttpRequest {
 	return &HttpRequest{
 		Ctx:     ctx,
 		Method:  defaultMethod,
