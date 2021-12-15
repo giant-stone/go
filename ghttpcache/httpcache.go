@@ -1,6 +1,7 @@
 package ghttpcache
 
 import (
+	"context"
 	"log"
 	"time"
 
@@ -51,7 +52,7 @@ func (its *HttpCache) Get(key string, expireAt int64) (rs []byte, err error) {
 }
 
 func (its *HttpCache) Fetch(fullUrl string) (rs []byte, err error) {
-	rq := ghttp.New().
+	rq := ghttp.New(context.Background()).
 		SetTimeout(its.HttpTimeout).
 		SetRequestMethod("GET").
 		SetUri(fullUrl).

@@ -2,6 +2,7 @@ package ghttp
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/base64"
 	"fmt"
@@ -16,7 +17,12 @@ import (
 	"github.com/giant-stone/go/gutil"
 )
 
+const (
+	defaultMethod = "GET"
+)
+
 type HttpRequest struct {
+	Ctx     context.Context
 	Debug   bool
 	Timeout time.Duration
 
@@ -36,9 +42,10 @@ type HttpRequest struct {
 	Elapsed    time.Duration
 }
 
-func New() *HttpRequest {
+func New(ctx context.Context) *HttpRequest {
 	return &HttpRequest{
-		Method:  "GET",
+		Ctx:     ctx,
+		Method:  defaultMethod,
 		Headers: map[string]interface{}{},
 		Timeout: time.Duration(10) * time.Second,
 	}
@@ -135,7 +142,7 @@ func (its *HttpRequest) Send() (err error) {
 		log.Printf("[debug] %s %s", its.Method, its.Uri)
 	}
 
-	req, err := http.NewRequest(its.Method, its.Uri, reqBody)
+	req, err := http.NewRequestWithContext(its.Ctx, its.Method, its.Uri, reqBody)
 	if err != nil {
 		return
 	}
