@@ -42,7 +42,7 @@ func Init(logpaths []string, loglevel string) {
 		cores = append(cores, zapcore.NewCore(enc, zapcore.AddSync(ioutil.Discard), loglevelStr2uint(loglevel)))
 	}
 
-	Logger = zap.New(zapcore.NewTee(cores...))
+	Logger = zap.New(zapcore.NewTee(cores...), zap.AddCaller())
 	defer Logger.Sync()
 
 	Sugared = Logger.Sugar()
