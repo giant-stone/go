@@ -11,9 +11,12 @@ import (
 
 	"github.com/giant-stone/go/ghttp"
 	"github.com/giant-stone/go/gutil"
+	"github.com/giant-stone/go/logger"
 )
 
 func ExampleNew() {
+	logger.Init(nil, "")
+
 	fullurl := "https://httpbin.org/post"
 	postData := []byte(`{"msg":"hello"}`)
 	req := ghttp.New().
@@ -25,12 +28,15 @@ func ExampleNew() {
 		SetPostBody(&postData)
 	err := req.Send()
 	ghttp.CheckRequestErr(fullurl, req.RespStatus, req.RespBody, err)
+	fmt.Println(req.RespStatus)
+	// Output: 200
 }
 
 // ExampleHttpRequest_SetPostBody show howto POST in application/x-www-form-urlencoded
 func ExampleHttpRequest_SetPostBody() {
+	logger.Init(nil, "")
+
 	rq := ghttp.New().
-		SetDebug(true).
 		SetRequestMethod("POST").
 		SetUri("https://httpbin.org/post").
 		SetTimeout(time.Second * 5)
@@ -46,6 +52,9 @@ func ExampleHttpRequest_SetPostBody() {
 	err := rq.Send()
 	gutil.CheckErr(err)
 
+	fmt.Println(rq.RespStatus)
+	// Output: 200
+
 	log.Println(
 		rq.RespStatus,
 		string(rq.RespBody),
@@ -54,10 +63,11 @@ func ExampleHttpRequest_SetPostBody() {
 
 // ExampleHttpRequest_SetPostBody2 show howto POST in multipart/form-data
 func ExampleHttpRequest_SetPostBody2() {
+	logger.Init(nil, "")
+
 	var err error
 
 	rq := ghttp.New().
-		SetDebug(true).
 		SetRequestMethod("POST").
 		SetUri("https://httpbin.org/post").
 		SetTimeout(time.Second * 5)
@@ -83,6 +93,9 @@ func ExampleHttpRequest_SetPostBody2() {
 	rq.SetHeader("Content-Type", w.FormDataContentType())
 	err = rq.Send()
 	gutil.ExitOnErr(err)
+
+	fmt.Println(rq.RespStatus)
+	// Output: 200
 
 	log.Println(
 		rq.RespStatus,
