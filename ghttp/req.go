@@ -8,13 +8,14 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
 	"github.com/giant-stone/go/gutil"
+	"github.com/giant-stone/go/logger"
+	"github.com/giant-stone/go/utilhuman"
 )
 
 const (
@@ -23,7 +24,6 @@ const (
 
 type HttpRequest struct {
 	Ctx     context.Context
-	Debug   bool
 	Timeout time.Duration
 
 	Method  string
@@ -127,10 +127,7 @@ func (its *HttpRequest) Send() (err error) {
 		if !strings.HasPrefix(proxyNode, "http") {
 			proxyNode = fmt.Sprintf("http://%s", proxyNode)
 		}
-
-		if its.Debug {
-			log.Printf("[debug] proxy=%s", proxyNode)
-		}
+		logger.Sugared.Infof("proxy=%s", proxyNode)
 
 		u, errUrl := url.Parse(proxyNode)
 		if errUrl != nil {
@@ -145,10 +142,6 @@ func (its *HttpRequest) Send() (err error) {
 	var reqBody io.Reader
 	if len(its.Body) > 0 {
 		reqBody = bytes.NewBuffer(its.Body)
-	}
-
-	if its.Debug {
-		log.Printf("[debug] %s %s", its.Method, its.Uri)
 	}
 
 	req, err := http.NewRequestWithContext(its.Ctx, its.Method, its.Uri, reqBody)
@@ -170,6 +163,8 @@ func (its *HttpRequest) Send() (err error) {
 	resp, err := client.Do(req)
 	elapsed := time.Since(start)
 
+	logger.Sugared.Infof("%s %s elapsed=%v err=%v", its.Method, its.Uri, utilhuman.FmtDuration(elapsed), err)
+
 	if err != nil {
 		its.Elapsed = elapsed
 		return
@@ -185,9 +180,4 @@ func (its *HttpRequest) Send() (err error) {
 	}
 	its.RespBody = RespBody
 	return
-}
-
-func (its *HttpRequest) SetDebug(debug bool) *HttpRequest {
-	its.Debug = debug
-	return its
 }
