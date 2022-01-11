@@ -1,6 +1,8 @@
 # Temporary
 .DS_Store
 ignore/
+*.log
+*.gz
 
 # Binaries for programs and plugins
 *.exe
