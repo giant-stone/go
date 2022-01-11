@@ -4,17 +4,15 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/giant-stone/go)](https://goreportcard.com/report/github.com/giant-stone/go)
 [![LICENSE](https://img.shields.io/github/license/giant-stone/go.svg?style=flat-square)](https://github.com/giant-stone/go/blob/master/LICENSE)
 
-
 giant-stone/go is a Go library which provides utility functions for common programming tasks.
 Confirm to https://en.wikipedia.org/wiki/Don%27t_repeat_yourself
 
-*Life is short, don't repeat yourself.*
+_Life is short, don't repeat yourself._
 
 ## Modules
 
 ghttp - HTTP client wrapper in Method chaining.  
 ghttpcache - caching ghttp response in process memory or Redis.
-
 
 ## Examples
 
@@ -31,10 +29,13 @@ import (
 	"os"
 	"time"
 
+  "github.com/giant-stone/go/logger"
 	"github.com/giant-stone/go/ghttp"
 )
 
 func main() {
+	logger.Init(nil, "")
+
 	fullurl := "https://httpbin.org/post"
 	postData := []byte(`{"msg":"hello"}`)
 	req := ghttp.New().
