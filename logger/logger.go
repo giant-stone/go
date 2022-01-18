@@ -46,9 +46,6 @@ func Init(logpaths []string, loglevel string) {
 	defer Logger.Sync()
 
 	Sugared = Logger.Sugar()
-
-	Logger.Info("logger construction succeeded")
-
 }
 
 // loglevelStr2uint converts logging level from a string into zapcore.Level.
