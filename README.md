@@ -11,8 +11,9 @@ _Life is short, don't repeat yourself._
 
 ## Modules
 
-ghttp - HTTP client wrapper in Method chaining.  
-ghttpcache - caching ghttp response in process memory or Redis.
+    ghttp - HTTP client wrapper in Method chaining.
+    gtime - parse timestamp into YYYY-MM-DD in UTC and vise versa
+    gstr  - strconv, crypto and unicode shortcut functions
 
 ## Examples
 
