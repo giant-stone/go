@@ -36,6 +36,9 @@ type HttpRequest struct {
 
 	Proxy string
 
+	// request send at timestamp in unix(milliseconds)
+	Rqts int64
+
 	RespStatus int
 	RespBody   []byte
 	RespHeader http.Header
@@ -159,9 +162,10 @@ func (its *HttpRequest) Send() (err error) {
 		}
 	}
 
-	start := time.Now()
+	now := time.Now()
+	its.Rqts = now.UnixNano() / 1000000
 	resp, err := client.Do(req)
-	elapsed := time.Since(start)
+	elapsed := time.Since(now)
 
 	logger.Sugared.Infof("%s %s elapsed=%v err=%v", its.Method, its.Uri, utilhuman.FmtDuration(elapsed), err)
 
