@@ -30,7 +30,6 @@ func TestIsInteger(t *testing.T) {
 			t.Errorf("IsInteger -%v- want %v got %v", item.s, item.want, got)
 		}
 	}
-
 }
 
 var (
