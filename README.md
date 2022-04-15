@@ -19,6 +19,10 @@ giant-stone/go 是一个将多个生产环境项目高频使用函数整合一�
     gstr  - strconv, crypto and unicode shortcut functions
     logger - custom logging level and logrotate
 
+## Installation
+
+    go get -u github.com/giant-stone/go@v0.0.4
+
 ## Examples
 
 ### Custom logging
