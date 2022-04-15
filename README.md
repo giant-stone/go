@@ -9,17 +9,45 @@ Confirm to https://en.wikipedia.org/wiki/Don%27t_repeat_yourself
 
 _Life is short, don't repeat yourself._
 
+giant-stone/go 是一个将多个生产环境项目高频使用函数整合一起，避免再每个项目中不断重复。
+人生苦短。
+
 ## Modules
 
     ghttp - HTTP client wrapper in Method chaining.
     gtime - parse timestamp into YYYY-MM-DD in UTC and vise versa
     gstr  - strconv, crypto and unicode shortcut functions
+    logger - custom logging level and logrotate
 
 ## Examples
+
+### Custom logging
+
+custom logging level and logrotate
+自定义日志级别和日志切割（默认 100 MB 一个、保留 30 天，最多保留 15 个）
+
+```
+package main
+
+import (
+	"github.com/giant-stone/go/logger"
+)
+
+func main() {
+	logger.Init([]string{"stderr"}, "debug")
+	// or logger.Init([]string{"/data/foo/main.log"}, "warn")
+
+	logger.Sugared.Debug("hello")
+	logger.Sugared.Error("hello")
+	logger.Sugared.Warnf("hello %s", "world")
+}
+```
 
 ### Send a HTTP GET request in ghttp
 
 Custom HTTP request timeout, method, proxy and body in [Method chaining](https://en.wikipedia.org/wiki/Method_chaining)
+
+自定义 HTTP 请求超的时、方法和 HTTP 代理
 
 ```
 package main
@@ -56,6 +84,8 @@ func main() {
 ```
 
 ### Send a POST multipart/form-data request in ghttp
+
+自定义带文件表单的 HTTP 请求
 
 ```
 	var err error
