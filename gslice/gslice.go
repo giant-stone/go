@@ -1,11 +1,14 @@
 package gslice
 
+import "sort"
+
 // MapToSlice convert a map to a slice, map in format { string => struct{} }.
 func MapToSlice(m *map[string]struct{}) (rs []string) {
 	all := make([]string, 0)
 	for item := range *m {
 		all = append(all, item)
 	}
+	sort.StringSlice(all).Sort()
 	return all
 }
 
