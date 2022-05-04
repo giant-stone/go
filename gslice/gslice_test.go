@@ -1,6 +1,7 @@
 package gslice_test
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/giant-stone/go/gslice"
@@ -17,6 +18,7 @@ func TestMapToSlice(t *testing.T) {
 		{map[string]struct{}{}, []string{}},
 	} {
 		got := gslice.MapToSlice(&item.s)
+		sort.StringSlice(item.want).Sort()
 		require.Equal(t, item.want, got, item.s)
 	}
 }
