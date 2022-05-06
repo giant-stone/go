@@ -1,4 +1,4 @@
-package utilhuman
+package ghuman
 
 import (
 	"fmt"
