@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/giant-stone/go/gtime"
+	"github.com/stretchr/testify/require"
 )
 
 func TestYyyymmdd2unixTimeUtc(t *testing.T) {
@@ -21,14 +22,25 @@ func TestYyyymmdd2unixTimeUtc(t *testing.T) {
 
 	for _, item := range samples {
 		got, gotErr := gtime.Yyyymmdd2unixTimeUtc(item.s)
+		require.ErrorIs(t, gotErr, item.wantErr, item.s)
+		require.Equal(t, item.want, got, item.s)
+	}
+}
 
-		if item.wantErr != gotErr {
-			t.Errorf("Yyyymmdd2unixTimeUtc -%v- wantErr %v gotErr %v", item.s, item.wantErr, gotErr)
+func TestMustParseDateInUnixtimeUtc(t *testing.T) {
+	var (
+		samples = []struct {
+			s    string
+			want int64
+		}{
+			{"1999-08-07", 933984000},
+			{"", 0},
 		}
+	)
 
-		if !reflect.DeepEqual(item.want, got) {
-			t.Errorf("Yyyymmdd2unixTimeUtc -%v- want %v got %v", item.s, item.want, got)
-		}
+	for _, item := range samples {
+		got := gtime.MustParseDateInUnixtimeUtc(item.s)
+		require.Equal(t, item.want, got, item.s)
 	}
 }
 
