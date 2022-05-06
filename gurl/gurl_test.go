@@ -36,19 +36,20 @@ func TestParams2qs(t *testing.T) {
 	}
 }
 
-func TestParseQueryStringByName(t *testing.T) {
+func TestParseQueryGetValueByName(t *testing.T) {
 	samples := []struct {
 		s    string
 		name string
 		want string
 	}{
+		{"foo.com/?name=foo", "name", "foo"},
 		{"foo.com/?name=foo&age=123", "name", "foo"},
 		{"?name=foo&age=123", "name", "foo"},
 		{"name=foo&age=123", "name", "foo"},
 		{"name=foo&age=123", "age", "123"},
 	}
 	for _, item := range samples {
-		got := gurl.ParseQueryStringByName(item.s, item.name)
+		got := gurl.ParseQueryGetValueByName(item.s, item.name)
 		require.Equal(t, item.want, got, item.s)
 	}
 }
