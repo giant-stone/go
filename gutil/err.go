@@ -3,13 +3,13 @@ package gutil
 import (
 	"runtime/debug"
 
-	"github.com/giant-stone/go/logger"
+	"github.com/giant-stone/go/glogging"
 )
 
 // CheckErr print error with stack context and return true for error else false.
 func CheckErr(err error) bool {
 	if err != nil {
-		logger.Sugared.Error(err, " ", string(debug.Stack()))
+		glogging.Sugared.Error(err, " ", string(debug.Stack()))
 		return true
 	}
 	return false
@@ -18,6 +18,6 @@ func CheckErr(err error) bool {
 // ExitOnErr print fatal error with stack context and exit.
 func ExitOnErr(err error) {
 	if err != nil {
-		logger.Sugared.Fatal(err, " ", string(debug.Stack()))
+		glogging.Sugared.Fatal(err, " ", string(debug.Stack()))
 	}
 }
