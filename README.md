@@ -25,7 +25,7 @@ giant-stone/go 是一个将多个生产环境项目高频使用函数整合一�
 
 ## Installation
 
-    go get -u github.com/giant-stone/go@v0.0.4
+    go get -u github.com/giant-stone/go@v0.0.5
 
 ## Examples
 
