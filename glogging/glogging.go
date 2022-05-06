@@ -1,5 +1,5 @@
 // logger customs go.uber.org/zap logger with level, caller context and rorate file via github.com/natefinch/lumberjack.
-package logger
+package glogging
 
 import (
 	"io/ioutil"
@@ -14,7 +14,7 @@ import (
 var Logger *zap.Logger
 var Sugared *zap.SugaredLogger
 
-// Init customs go.uber.org/zap logger.
+// Init customs go.uber.org/zap glogging.
 //   parameter logpaths avaiable value: stdout,stderr,path/to/file;
 //   parameter loglevel avaiable value: debug,warn,error,fatal.
 func Init(logpaths []string, loglevel string) {
