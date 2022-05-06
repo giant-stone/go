@@ -9,15 +9,19 @@ Confirm to https://en.wikipedia.org/wiki/Don%27t_repeat_yourself
 
 _Life is short, don't repeat yourself._
 
-giant-stone/go 是一个将多个生产环境项目高频使用函数整合一起，避免再每个项目中不断重复。
+giant-stone/go 是一个将多个生产环境项目高频使用函数整合一起，避免在每个项目中不断重复。
 人生苦短。
 
 ## Modules
 
-    ghttp - HTTP client wrapper in Method chaining.
-    gtime - parse timestamp into YYYY-MM-DD in UTC and vise versa
-    gstr  - strconv, crypto and unicode shortcut functions
-    logger - custom logging level and logrotate
+| package  | description                                           |
+| -------- | ----------------------------------------------------- |
+| ghttp    | HTTP client wrapper in Method chaining                |
+| gtime    | parse timestamp into YYYY-MM-DD in UTC and vise versa |
+| gstr     | strconv, crypto and unicode shortcut functions        |
+| gurl     | net/url shortcut functions                            |
+| glogging | custom logging level and logrotate                    |
+| ghuman   | format duration for human                             |
 
 ## Installation
 
@@ -34,16 +38,16 @@ custom logging level and logrotate
 package main
 
 import (
-	"github.com/giant-stone/go/logger"
+	"github.com/giant-stone/go/glogging"
 )
 
 func main() {
-	logger.Init([]string{"stderr"}, "debug")
-	// or logger.Init([]string{"/data/foo/main.log"}, "warn")
+	glogging.Init([]string{"stderr"}, "debug")
+	// or glogging.Init([]string{"/data/foo/main.log"}, "warn")
 
-	logger.Sugared.Debug("hello")
-	logger.Sugared.Error("hello")
-	logger.Sugared.Warnf("hello %s", "world")
+	glogging.Sugared.Debug("hello")
+	glogging.Sugared.Error("hello")
+	glogging.Sugared.Warnf("hello %s", "world")
 }
 ```
 
@@ -62,12 +66,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/giant-stone/go/logger"
+	"github.com/giant-stone/go/glogging"
 	"github.com/giant-stone/go/ghttp"
 )
 
 func main() {
-	logger.Init(nil, "")
+	glogging.Init([]string{"stderr"}, "debug")
 
 	fullurl := "https://httpbin.org/post"
 	postData := []byte(`{"msg":"hello"}`)
