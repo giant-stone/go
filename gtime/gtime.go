@@ -34,3 +34,8 @@ func Yyyymmdd2unixTimeUtc(s string) (rs int64, err error) {
 func UnixTime2YyyymmddUtc(t int64) (rs string) {
 	return time.Unix(t, 0).UTC().Format("2006-01-02")
 }
+
+func MustParseDateInUnixtimeUtc(s string) (rs int64) {
+	rs, _ = Yyyymmdd2unixTimeUtc(s)
+	return
+}
