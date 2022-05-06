@@ -36,7 +36,7 @@ func sliceInterface2sliceStr(items []interface{}) (rs sort.StringSlice) {
 	return
 }
 
-func ParseQueryStringByName(s, name string) (rs string) {
+func ParseQueryGetValueByName(s, name string) (rs string) {
 	var qs string
 	splits := strings.Split(s, "?")
 	if len(splits) > 1 {
@@ -45,7 +45,7 @@ func ParseQueryStringByName(s, name string) (rs string) {
 		qs = s
 	}
 
-	if !strings.Contains(qs, "&") {
+	if !strings.Contains(qs, "=") {
 		rs = s
 	} else {
 		rsParse, _ := url.ParseQuery(qs)
