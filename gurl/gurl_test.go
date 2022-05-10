@@ -47,6 +47,10 @@ func TestParseQueryGetValueByName(t *testing.T) {
 		{"?name=foo&age=123", "name", "foo"},
 		{"name=foo&age=123", "name", "foo"},
 		{"name=foo&age=123", "age", "123"},
+
+		{"foo.com", "name", ""},
+		{"https://foo.com", "name", ""},
+		{"", "name", ""},
 	}
 	for _, item := range samples {
 		got := gurl.ParseQueryGetValueByName(item.s, item.name)
