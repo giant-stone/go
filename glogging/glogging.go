@@ -15,8 +15,8 @@ var Logger *zap.Logger
 var Sugared *zap.SugaredLogger
 
 // Init customs go.uber.org/zap glogging.
-//   parameter logpaths avaiable value: stdout,stderr,path/to/file;
-//   parameter loglevel avaiable value: debug,warn,error,fatal.
+//   parameter logpaths available value: stdout,stderr,path/to/file;
+//   parameter loglevel available value: debug,warn,error,fatal.
 func Init(logpaths []string, loglevel string) {
 	enc := zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
 
