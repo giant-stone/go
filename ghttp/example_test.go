@@ -10,12 +10,12 @@ import (
 	"time"
 
 	"github.com/giant-stone/go/ghttp"
+	"github.com/giant-stone/go/glogging"
 	"github.com/giant-stone/go/gutil"
-	"github.com/giant-stone/go/logger"
 )
 
 func ExampleNew() {
-	logger.Init(nil, "")
+	glogging.Init(nil, "")
 
 	fullurl := "https://httpbin.org/post"
 	postData := []byte(`{"msg":"hello"}`)
@@ -34,7 +34,7 @@ func ExampleNew() {
 
 // ExampleHttpRequest_SetPostBody show howto POST in application/x-www-form-urlencoded
 func ExampleHttpRequest_SetPostBody() {
-	logger.Init(nil, "")
+	glogging.Init(nil, "")
 
 	rq := ghttp.New().
 		SetRequestMethod("POST").
@@ -63,7 +63,7 @@ func ExampleHttpRequest_SetPostBody() {
 
 // ExampleHttpRequest_SetPostBody2 show howto POST in multipart/form-data
 func ExampleHttpRequest_SetPostBody2() {
-	logger.Init(nil, "")
+	glogging.Init(nil, "")
 
 	var err error
 

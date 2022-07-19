@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/giant-stone/go/ghuman"
+	"github.com/giant-stone/go/glogging"
 	"github.com/giant-stone/go/gutil"
-	"github.com/giant-stone/go/logger"
-	"github.com/giant-stone/go/utilhuman"
 )
 
 const (
@@ -130,7 +130,7 @@ func (its *HttpRequest) Send() (err error) {
 		if !strings.HasPrefix(proxyNode, "http") {
 			proxyNode = fmt.Sprintf("http://%s", proxyNode)
 		}
-		logger.Sugared.Infof("proxy=%s", proxyNode)
+		glogging.Sugared.Infof("proxy=%s", proxyNode)
 
 		u, errUrl := url.Parse(proxyNode)
 		if errUrl != nil {
@@ -167,7 +167,7 @@ func (its *HttpRequest) Send() (err error) {
 	resp, err := client.Do(req)
 	elapsed := time.Since(now)
 
-	logger.Sugared.Infof("%s %s elapsed=%v err=%v", its.Method, its.Uri, utilhuman.FmtDuration(elapsed), err)
+	glogging.Sugared.Infof("%s %s elapsed=%v err=%v", its.Method, its.Uri, ghuman.FmtDuration(elapsed), err)
 
 	if err != nil {
 		its.Elapsed = elapsed
