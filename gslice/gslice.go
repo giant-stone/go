@@ -1,6 +1,9 @@
 package gslice
 
-import "strings"
+import (
+	"sort"
+	"strings"
+)
 
 // UniqMapToSlice converts a map into a slice of string.
 func UniqMapToSlice(m map[string]struct{}) (rs []string) {
@@ -11,6 +14,7 @@ func UniqMapToSlice(m map[string]struct{}) (rs []string) {
 		}
 		rs = append(rs, item)
 	}
+	sort.StringSlice(rs).Sort()
 	return rs
 }
 
@@ -32,4 +36,15 @@ func MergeSliceInUniq(a []string, b []string) (rs map[string]struct{}) {
 		rs[item] = struct{}{}
 	}
 	return
+}
+
+// SliceIndex get item index of a slice
+//  ref:https://stackoverflow.com/a/8307594/913751
+func SliceIndex(limit int, predicate func(i int) bool) int {
+	for i := 0; i < limit; i++ {
+		if predicate(i) {
+			return i
+		}
+	}
+	return -1
 }
