@@ -34,7 +34,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/giant-stone/go/logger"
+	"github.com/giant-stone/go/glogging"
 )
 
 const (
@@ -63,7 +63,7 @@ func (it *GraceQuit) Init() (ctx context.Context) {
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		for sig := range sigs {
-			logger.Sugared.Debugf("signal %v captured, cancel context and exit after %v", sig, duration)
+			glogging.Sugared.Debugf("signal %v captured, cancel context and exit after %v", sig, duration)
 
 			it.deletePid()
 
@@ -92,7 +92,7 @@ func (it *GraceQuit) deletePid() {
 	}
 	err := os.Remove(it.pathPid)
 	if err != nil {
-		logger.Sugared.Error("os.Remove", err, it.pathPid)
+		glogging.Sugared.Error("os.Remove", err, it.pathPid)
 	}
 }
 
@@ -103,12 +103,12 @@ func (it *GraceQuit) createPid() {
 
 	err := os.MkdirAll(path.Dir(it.pathPid), 0644)
 	if err != nil {
-		logger.Sugared.Error("os.MkdirAll", err, it.pathPid)
+		glogging.Sugared.Error("os.MkdirAll", err, it.pathPid)
 	}
 
 	err = ioutil.WriteFile(it.pathPid, []byte(fmt.Sprintf("%d", os.Getpid())), 0644)
 	if err != nil {
-		logger.Sugared.Error("ioutil.WriteFile", err, it.pathPid)
+		glogging.Sugared.Error("ioutil.WriteFile", err, it.pathPid)
 	}
 }
 

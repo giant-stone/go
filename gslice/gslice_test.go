@@ -23,10 +23,13 @@ func TestUniqMapToSlice(t *testing.T) {
 			[]string{"a", "b", "c"},
 		},
 
+		{map[string]struct{}{"甲": {}, "乙": {}, "丙": {}}, []string{"甲", "乙", "丙"}},
+		{map[string]struct{}{"foo": {}, "bar": {}}, []string{"foo", "bar"}},
+		{map[string]struct{}{}, []string{}},
+
 		{nil, []string{}},
 	} {
 		got := gslice.UniqMapToSlice(item.s)
-
 		sort.Strings(got)
 		sort.Strings(item.want)
 		require.Equal(t, item.want, got)
@@ -54,5 +57,21 @@ func TestMergeSliceInUniq(t *testing.T) {
 	} {
 		got := gslice.MergeSliceInUniq(item.a, item.b)
 		require.Equal(t, item.want, got)
+	}
+}
+
+func TestSliceIndex(t *testing.T) {
+	for _, item := range []struct {
+		haystack []string
+		needle   string
+		want     int
+	}{
+		{[]string{"foo", "bar", "baz"}, "go", -1},
+		{[]string{"中文输入法", "输入法", "中文"}, "中文", 2},
+	} {
+		got := gslice.SliceIndex(len(item.haystack), func(i int) bool {
+			return item.haystack[i] == item.needle
+		})
+		require.Equal(t, item.want, got, item.haystack)
 	}
 }
