@@ -61,8 +61,8 @@ func ExampleHttpRequest_SetPostBody() {
 	)
 }
 
-// ExampleHttpRequest_SetPostBody2 show howto POST in multipart/form-data
-func ExampleHttpRequest_SetPostBody2() {
+// ExampleHttpRequest_SetPostBody show howto POST in multipart/form-data
+func ExampleHttpRequest_SetPostBody_multipart() {
 	glogging.Init(nil, "")
 
 	var err error
