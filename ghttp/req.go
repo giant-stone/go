@@ -37,18 +37,21 @@ type HttpRequest struct {
 	Proxy string
 
 	// request send at timestamp in unix(milliseconds)
-	Rqts int64
+	Rqts    int64
+	Elapsed time.Duration
 
+	// DEPRECATED.
 	RespStatus int
-	RespBody   []byte
+	// DEPRECATED.
+	RespBody []byte
+	// DEPRECATED.
 	RespHeader http.Header
-	Elapsed    time.Duration
 }
 
 func New() *HttpRequest {
 	return &HttpRequest{
 		Ctx:     context.Background(),
-		Method:  defaultMethod,
+		Method:  "",
 		Headers: map[string]interface{}{},
 		Timeout: time.Duration(10) * time.Second,
 	}
@@ -57,7 +60,7 @@ func New() *HttpRequest {
 func NewWithCtx(ctx context.Context) *HttpRequest {
 	return &HttpRequest{
 		Ctx:     ctx,
-		Method:  defaultMethod,
+		Method:  "",
 		Headers: map[string]interface{}{},
 		Timeout: time.Duration(10) * time.Second,
 	}
@@ -116,6 +119,8 @@ func (it *HttpRequest) SetHeaders(headers map[string]interface{}) *HttpRequest {
 	return it
 }
 
+// DEPRECATED.
+//   `Send()` does not supports gomock, use `Do()` instead.
 func (it *HttpRequest) Send() (err error) {
 	client := &http.Client{
 		Timeout: it.Timeout,
@@ -145,6 +150,10 @@ func (it *HttpRequest) Send() (err error) {
 	var reqBody io.Reader
 	if len(it.Body) > 0 {
 		reqBody = bytes.NewBuffer(it.Body)
+	}
+
+	if it.Method == "" {
+		it.Method = defaultMethod
 	}
 
 	req, err := http.NewRequestWithContext(it.Ctx, it.Method, it.Uri, reqBody)
@@ -184,4 +193,81 @@ func (it *HttpRequest) Send() (err error) {
 	}
 	it.RespBody = RespBody
 	return
+}
+
+func (it *HttpRequest) GenerateRequest() (rs *http.Request) {
+	var rqBody io.Reader
+	if len(it.Body) > 0 {
+		rqBody = io.NopCloser(bytes.NewReader(it.Body))
+	}
+
+	rs, _ = http.NewRequestWithContext(it.Ctx, it.Method, it.Uri, rqBody)
+
+	for k, v := range it.Headers {
+		value := fmt.Sprintf("%v", v)
+		rs.Header.Set(k, value)
+		glogging.Sugared.Debugf("Header.Set %s=%s", k, value)
+	}
+
+	if rs.Header.Get("User-Agent") == "" {
+		if it.UseRandomUserAgent {
+			value := gutil.RandChoice(UserAgents).(string)
+			rs.Header.Set("User-Agent", value)
+
+			glogging.Sugared.Debugf("Header.Set User-Agent=%s", value)
+		}
+	}
+
+	return
+}
+
+// Do implements HttpClient
+func (it *HttpRequest) Do(rq *http.Request) (rs *http.Response, err error) {
+	if Client == nil {
+		client := &http.Client{
+			Timeout: it.Timeout,
+		}
+
+		tr := http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+
+		if it.Proxy != "" {
+			proxyNode := it.Proxy
+			if !strings.HasPrefix(proxyNode, "http") {
+				proxyNode = fmt.Sprintf("http://%s", proxyNode)
+			}
+			glogging.Sugared.Debugf("proxy=%s", proxyNode)
+
+			u, errUrl := url.Parse(proxyNode)
+			if errUrl != nil {
+				err = errUrl
+				return
+			}
+			tr.Proxy = http.ProxyURL(u)
+			client.Transport = &tr
+		}
+		client.Transport = &tr
+
+		Client = client
+	}
+
+	now := time.Now()
+	it.Rqts = now.UnixNano() / 1000000
+	rs, err = Client.Do(rq)
+	elapsed := time.Since(now)
+
+	glogging.Sugared.Debugf("%s %s elapsed=%v err=%v", it.Method, it.Uri, ghuman.FmtDuration(elapsed), err)
+
+	if err != nil {
+		it.Elapsed = elapsed
+		return
+	}
+
+	return
+}
+
+func ReadBody(httpRs *http.Response) (rs []byte, err error) {
+	defer httpRs.Body.Close()
+	return ioutil.ReadAll(httpRs.Body)
 }
