@@ -27,7 +27,7 @@ func TestGhttpDoGhttpNew(t *testing.T) {
 		New().
 		SetRequestMethod(ghttp.POST).
 		SetUri("https://httpbin.org/post").
-		SetPostBody(&wantBody).GetRequest()
+		SetPostBody(&wantBody).GenerateRequest()
 
 	clientImpl.EXPECT().Do(rq.Clone(context.Background())).Return(
 		&http.Response{
