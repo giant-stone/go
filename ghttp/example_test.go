@@ -2,9 +2,10 @@ package ghttp_test
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
-	"log"
 	"mime/multipart"
+	"net/http"
 	"net/url"
 	"os"
 	"time"
@@ -15,7 +16,7 @@ import (
 )
 
 func ExampleNew() {
-	glogging.Init(nil, "")
+	glogging.Init([]string{"stderr"}, "debug")
 
 	fullurl := "https://httpbin.org/post"
 	postData := []byte(`{"msg":"hello"}`)
@@ -32,9 +33,17 @@ func ExampleNew() {
 	// Output: 200
 }
 
+type FieldForm struct {
+	Id   string
+	Name string
+}
+type Rs struct {
+	Form *FieldForm `json:"form"`
+}
+
 // ExampleHttpRequest_SetPostBody show howto POST in application/x-www-form-urlencoded
 func ExampleHttpRequest_SetPostBody() {
-	glogging.Init(nil, "")
+	glogging.Init([]string{"stderr"}, "debug")
 
 	rq := ghttp.New().
 		SetRequestMethod("POST").
@@ -50,27 +59,32 @@ func ExampleHttpRequest_SetPostBody() {
 
 	rq.SetPostBody(&rqBody)
 	err := rq.Send()
-	gutil.CheckErr(err)
+	gutil.ExitOnErr(err)
+
+	want := &FieldForm{
+		Id:   form.Get("id"),
+		Name: form.Get("name"),
+	}
+	var rs Rs
+	err = json.Unmarshal(rq.RespBody, &rs)
+	gutil.ExitOnErr(err)
 
 	fmt.Println(rq.RespStatus)
-	// Output: 200
-
-	log.Println(
-		rq.RespStatus,
-		string(rq.RespBody),
-	)
+	fmt.Println(want.Id == rs.Form.Id && want.Name == rs.Form.Name)
+	// Output:
+	// 200
+	// true
 }
 
 // ExampleHttpRequest_SetPostBody show howto POST in multipart/form-data
 func ExampleHttpRequest_SetPostBody_multipart() {
-	glogging.Init(nil, "")
+	glogging.Init([]string{"stderr"}, "debug")
+	// use default implement avoid conflict with ghttp/ghttp_test.go
+	ghttp.UseImpl(nil)
 
 	var err error
 
-	rq := ghttp.New().
-		SetRequestMethod("POST").
-		SetUri("https://httpbin.org/post").
-		SetTimeout(time.Second * 5)
+	gh := ghttp.New().SetTimeout(time.Second * 5)
 
 	var b bytes.Buffer
 	w := multipart.NewWriter(&b)
@@ -87,18 +101,19 @@ func ExampleHttpRequest_SetPostBody_multipart() {
 	err = w.Close()
 	gutil.ExitOnErr(err)
 
-	rqBody := b.Bytes()
-
-	rq.SetPostBody(&rqBody)
-	rq.SetHeader("Content-Type", w.FormDataContentType())
-	err = rq.Send()
+	rq, err := http.NewRequest("POST", "https://httpbin.org/post", bytes.NewReader(b.Bytes()))
 	gutil.ExitOnErr(err)
 
-	fmt.Println(rq.RespStatus)
-	// Output: 200
+	rq.Header.Add("Content-Type", w.FormDataContentType())
+	rs, err := gh.Do(rq)
+	gutil.ExitOnErr(err)
 
-	log.Println(
-		rq.RespStatus,
-		string(rq.RespBody),
-	)
+	rsBody, err := ghttp.ReadBody(rs)
+	gutil.ExitOnErr(err)
+
+	fmt.Println(rs.StatusCode)
+	fmt.Println(len(rsBody) > 0)
+	// Output:
+	// 200
+	// true
 }
