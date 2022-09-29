@@ -2,7 +2,6 @@ package ghttp_test
 
 import (
 	"bytes"
-	"context"
 	"io"
 	"net/http"
 	"testing"
@@ -27,9 +26,9 @@ func TestGhttpDoGhttpNew(t *testing.T) {
 		New().
 		SetRequestMethod(ghttp.POST).
 		SetUri("https://httpbin.org/post").
-		SetPostBody(&wantBody).GenerateRequest()
+		SetPostBody(wantBody).GenerateRequest()
 
-	clientImpl.EXPECT().Do(rq.Clone(context.Background())).Return(
+	clientImpl.EXPECT().Do(rq).Return(
 		&http.Response{
 			Body:       io.NopCloser(bytes.NewReader(wantBody)),
 			StatusCode: http.StatusOK,
@@ -56,7 +55,7 @@ func TestGhttpDoHttpNewRequest(t *testing.T) {
 
 	rq, _ := http.NewRequest("POST", "https://httpbin.org/post", io.NopCloser(bytes.NewReader(wantBody)))
 
-	clientImpl.EXPECT().Do(rq.Clone(context.Background())).Return(
+	clientImpl.EXPECT().Do(rq).Return(
 		&http.Response{
 			Body:       io.NopCloser(bytes.NewReader(wantBody)),
 			StatusCode: http.StatusOK,
