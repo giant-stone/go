@@ -48,3 +48,27 @@ func SliceIndex(limit int, predicate func(i int) bool) int {
 	}
 	return -1
 }
+
+// MergeSliceInUniqAndOrder merges two slice of string into map in unique.
+func MergeSliceInUniqAndOrder(merged []string, part []string) (rs []string) {
+	sorted := make([]string, 0)
+	unique := make(map[string]struct{}, 0)
+
+	for _, item := range merged {
+		if _, dup := unique[item]; dup {
+			continue
+		}
+		unique[item] = struct{}{}
+		sorted = append(sorted, item)
+	}
+
+	for _, item := range part {
+		if _, dup := unique[item]; dup {
+			continue
+		}
+		unique[item] = struct{}{}
+		sorted = append(sorted, item)
+	}
+
+	return sorted
+}
