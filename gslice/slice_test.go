@@ -4,9 +4,9 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/giant-stone/go/gslice"
-
 	"github.com/stretchr/testify/require"
+
+	"github.com/giant-stone/go/gslice"
 )
 
 func TestUniqMapToSlice(t *testing.T) {
@@ -108,7 +108,7 @@ func TestMergeSliceInUniqAndOrder(t *testing.T) {
 
 		{nil, nil, []string{}},
 	} {
-		got := utilslice.MergeSliceInUniqAndOrder(item.a, item.b)
+		got := gslice.MergeSliceInUniqAndOrder(item.a, item.b)
 		require.Equal(t, item.want, got)
 	}
 }
