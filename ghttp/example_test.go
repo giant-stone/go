@@ -17,6 +17,10 @@ import (
 	"github.com/giant-stone/go/gutil"
 )
 
+const (
+	DefaultTimeoutInSecs = time.Second * 5
+)
+
 func ExampleNew() {
 	glogging.Init([]string{"stderr"}, "debug")
 
@@ -28,7 +32,7 @@ func ExampleNew() {
 		SetRequestMethod("POST").
 		SetUri(fullurl).
 		SetProxy(os.Getenv("HTTPS_PROXY")).
-		SetPostBody(&postData)
+		SetPostBody(postData)
 	err := req.Send()
 	ghttp.CheckRequestErr(fullurl, req.RespStatus, req.RespBody, err)
 	fmt.Println(req.RespStatus)
@@ -59,7 +63,7 @@ func ExampleHttpRequest_SetPostBody() {
 
 	rqBody := []byte(form.Encode())
 
-	rq.SetPostBody(&rqBody)
+	rq.SetPostBody(rqBody)
 	err := rq.Send()
 	gutil.ExitOnErr(err)
 
@@ -144,4 +148,48 @@ func ExampleReadBody() {
 	// Output: 53
 	// 53
 	// 53
+}
+
+func ExampleHttpRequest_DoAndSetPostBody() {
+	glogging.Init([]string{"stderr"}, "debug")
+
+	paramsPost := map[string]interface{}{
+		"msg": "hello",
+	}
+	fullurl := "https://httpbin.org/post"
+	dataPostBody, _ := json.Marshal(paramsPost)
+
+	rq := ghttp.New().
+		SetRequestMethod("POST").
+		SetUri(fullurl)
+
+	rq.SetPostBody(dataPostBody)
+
+	resp, err := ghttp.NewWithCtx(context.Background()).
+		SetTimeout(DefaultTimeoutInSecs).
+		Do(rq.GenerateRequest())
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	dataRsBody, err := ghttp.ReadBody(resp)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	type Rs struct {
+		Data string
+	}
+	rs := &Rs{}
+	err = json.Unmarshal(dataRsBody, rs)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ghttp.CheckRequestErr(fullurl, resp.StatusCode, dataRsBody, err)
+	fmt.Println(resp.StatusCode)
+	fmt.Println(rs.Data)
+	// Output: 200
+	// {"msg":"hello"}
 }
