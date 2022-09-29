@@ -92,11 +92,8 @@ func (it *HttpRequest) SetProxy(addr string) *HttpRequest {
 	return it
 }
 
-func (it *HttpRequest) SetPostBody(body *[]byte) *HttpRequest {
-	if body != nil && len(*body) > 0 {
-		it.Body = make([]byte, len(*body))
-		copy(it.Body, *body)
-	}
+func (it *HttpRequest) SetPostBody(body []byte) *HttpRequest {
+	it.Body = body
 	return it
 }
 
@@ -196,12 +193,7 @@ func (it *HttpRequest) Send() (err error) {
 }
 
 func (it *HttpRequest) GenerateRequest() (rs *http.Request) {
-	var rqBody io.Reader
-	if len(it.Body) > 0 {
-		rqBody = io.NopCloser(bytes.NewReader(it.Body))
-	}
-
-	rs, _ = http.NewRequestWithContext(it.Ctx, it.Method, it.Uri, rqBody)
+	rs, _ = http.NewRequestWithContext(it.Ctx, it.Method, it.Uri, bytes.NewReader(it.Body))
 
 	for k, v := range it.Headers {
 		value := fmt.Sprintf("%v", v)
@@ -218,7 +210,7 @@ func (it *HttpRequest) GenerateRequest() (rs *http.Request) {
 		}
 	}
 
-	return
+	return rs
 }
 
 // Do implements HttpClient
@@ -257,7 +249,7 @@ func (it *HttpRequest) Do(rq *http.Request) (rs *http.Response, err error) {
 	rs, err = Client.Do(rq)
 	elapsed := time.Since(now)
 
-	glogging.Sugared.Debugf("%s %s elapsed=%v err=%v", it.Method, it.Uri, ghuman.FmtDuration(elapsed), err)
+	glogging.Sugared.Debugf("%s %s %d elapsed=%v err=%v", rq.Method, rq.URL.String(), rs.StatusCode, ghuman.FmtDuration(elapsed), err)
 
 	if err != nil {
 		it.Elapsed = elapsed
