@@ -75,3 +75,40 @@ func TestSliceIndex(t *testing.T) {
 		require.Equal(t, item.want, got, item.haystack)
 	}
 }
+
+func TestMergeSliceInUniqAndOrder(t *testing.T) {
+	for _, item := range []struct {
+		a    []string
+		b    []string
+		want []string
+	}{
+		{
+			[]string{"c", "a"},
+			[]string{"b", "c", "d"},
+			[]string{"c", "a", "b", "d"},
+		},
+
+		{
+			[]string{"c", "b"},
+			[]string{"c", "b"},
+			[]string{"c", "b"},
+		},
+
+		{
+			[]string{"a"},
+			[]string{},
+			[]string{"a"},
+		},
+
+		{
+			[]string{},
+			[]string{"b"},
+			[]string{"b"},
+		},
+
+		{nil, nil, []string{}},
+	} {
+		got := utilslice.MergeSliceInUniqAndOrder(item.a, item.b)
+		require.Equal(t, item.want, got)
+	}
+}
