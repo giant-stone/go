@@ -267,7 +267,12 @@ func (it *HttpRequest) Do(rq *http.Request) (rs *http.Response, err error) {
 	return
 }
 
+// read body data from http.Response, it allows call multiple times
 func ReadBody(httpRs *http.Response) (rs []byte, err error) {
 	defer httpRs.Body.Close()
-	return ioutil.ReadAll(httpRs.Body)
+	rs, err = ioutil.ReadAll(httpRs.Body)
+	if err == nil {
+		httpRs.Body = io.NopCloser(bytes.NewReader(rs))
+	}
+	return rs, err
 }
