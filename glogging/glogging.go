@@ -4,11 +4,19 @@ package glogging
 import (
 	"io/ioutil"
 	"os"
-	"strings"
 
 	"github.com/natefinch/lumberjack"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+)
+
+type Loglevel string
+
+const (
+	DEBUG Loglevel = "debug"
+	WARN  Loglevel = "warn"
+	ERROR Loglevel = "error"
+	FATAL Loglevel = "fatal"
 )
 
 var Logger *zap.Logger
@@ -16,8 +24,8 @@ var Sugared *zap.SugaredLogger
 
 // Init customs go.uber.org/zap glogging.
 //   parameter logpaths available value: stdout,stderr,path/to/file;
-//   parameter loglevel available value: debug,warn,error,fatal.
-func Init(logpaths []string, loglevel string) {
+//   parameter loglevel
+func Init(logpaths []string, loglevel Loglevel) {
 	enc := zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
 
 	cores := make([]zapcore.Core, 0)
@@ -49,24 +57,22 @@ func Init(logpaths []string, loglevel string) {
 }
 
 // loglevelStr2uint converts logging level from a string into zapcore.Level.
-func loglevelStr2uint(loglevel string) (rs zapcore.Level) {
-	loglevel = strings.ToLower(loglevel)
-
+func loglevelStr2uint(loglevel Loglevel) (rs zapcore.Level) {
 	switch loglevel {
-	case "debug":
+	case DEBUG:
 		{
 			return zapcore.DebugLevel
 		}
-	case "warn":
+	case WARN:
 		{
 			return zapcore.WarnLevel
 		}
-	case "error":
+	case ERROR:
 		{
 
 			return zapcore.ErrorLevel
 		}
-	case "fatal":
+	case FATAL:
 		{
 			return zapcore.FatalLevel
 		}
