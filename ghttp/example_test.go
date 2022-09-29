@@ -2,8 +2,10 @@ package ghttp_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -116,4 +118,30 @@ func ExampleHttpRequest_SetPostBody_multipart() {
 	// Output:
 	// 200
 	// true
+}
+
+func ExampleReadBody() {
+	glogging.Init([]string{"stderr"}, "error")
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	gh := ghttp.NewWithCtx(ctx).SetUri("https://httpbin.org/uuid")
+	rs, err := gh.Do(gh.GenerateRequest())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for i := 0; i < 3; i++ {
+		body, err := ghttp.ReadBody(rs)
+		if err != nil {
+			log.Fatal(err)
+		}
+		// something looks like `{"uuid": "2ae860ed-47da-4adb-9373-128f3eb4ce71"}`
+		fmt.Println(len(body))
+	}
+
+	// Output: 53
+	// 53
+	// 53
 }
