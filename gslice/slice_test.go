@@ -4,9 +4,9 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/giant-stone/go/gslice"
-
 	"github.com/stretchr/testify/require"
+
+	"github.com/giant-stone/go/gslice"
 )
 
 func TestUniqMapToSlice(t *testing.T) {
@@ -73,5 +73,42 @@ func TestSliceIndex(t *testing.T) {
 			return item.haystack[i] == item.needle
 		})
 		require.Equal(t, item.want, got, item.haystack)
+	}
+}
+
+func TestMergeSliceInUniqAndOrder(t *testing.T) {
+	for _, item := range []struct {
+		a    []string
+		b    []string
+		want []string
+	}{
+		{
+			[]string{"c", "a"},
+			[]string{"b", "c", "d"},
+			[]string{"c", "a", "b", "d"},
+		},
+
+		{
+			[]string{"c", "b"},
+			[]string{"c", "b"},
+			[]string{"c", "b"},
+		},
+
+		{
+			[]string{"a"},
+			[]string{},
+			[]string{"a"},
+		},
+
+		{
+			[]string{},
+			[]string{"b"},
+			[]string{"b"},
+		},
+
+		{nil, nil, []string{}},
+	} {
+		got := gslice.MergeSliceInUniqAndOrder(item.a, item.b)
+		require.Equal(t, item.want, got)
 	}
 }
