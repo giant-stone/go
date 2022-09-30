@@ -35,6 +35,11 @@ func UnixTime2YyyymmddUtc(t int64) (rs string) {
 	return time.Unix(t, 0).UTC().Format("2006-01-02")
 }
 
+// UnixTime2YYYYMMDDHHmmLocal convert a unix time to a string in local in format "2006-01-02 15:04:05".
+func UnixTime2YYYYMMDDHHmmLocal(t int64) (rs string) {
+	return time.Unix(t, 0).Format("2006-01-02 15:04:05")
+}
+
 func MustParseDateInUnixtimeUtc(s string) (rs int64) {
 	rs, _ = Yyyymmdd2unixTimeUtc(s)
 	return

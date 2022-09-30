@@ -25,7 +25,7 @@ giant-stone/go 是一个将多个生产环境项目高频使用函数整合一�
 
 ## Installation
 
-    go get -u github.com/giant-stone/go@v0.0.5
+    go get -u github.com/giant-stone/go@v0.0.9
 
 ## Examples
 
@@ -121,7 +121,7 @@ func main() {
 
 	rqBody := b.Bytes()
 
-	rq.SetPostBody(&rqBody)
+	rq.SetPostBody(rqBody)
 	rq.SetHeader("Content-Type", w.FormDataContentType())
 	err = rq.Send()
 	gutil.ExitOnErr(err)
@@ -131,3 +131,9 @@ func main() {
 		string(rq.RespBody),
 	)
 ```
+
+## mock
+
+更新 ghttp mock 代码
+
+    mockgen -source=ghttp/ghttp.go -destination=ghttp/httpclitest.go -package=ghttp
