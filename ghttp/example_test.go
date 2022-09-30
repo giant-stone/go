@@ -2,9 +2,12 @@ package ghttp_test
 
 import (
 	"bytes"
+	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"mime/multipart"
+	"net/http"
 	"net/url"
 	"os"
 	"time"
@@ -14,8 +17,12 @@ import (
 	"github.com/giant-stone/go/gutil"
 )
 
+const (
+	DefaultTimeoutInSecs = time.Second * 5
+)
+
 func ExampleNew() {
-	glogging.Init(nil, "")
+	glogging.Init([]string{"stderr"}, "debug")
 
 	fullurl := "https://httpbin.org/post"
 	postData := []byte(`{"msg":"hello"}`)
@@ -25,16 +32,24 @@ func ExampleNew() {
 		SetRequestMethod("POST").
 		SetUri(fullurl).
 		SetProxy(os.Getenv("HTTPS_PROXY")).
-		SetPostBody(&postData)
+		SetPostBody(postData)
 	err := req.Send()
 	ghttp.CheckRequestErr(fullurl, req.RespStatus, req.RespBody, err)
 	fmt.Println(req.RespStatus)
 	// Output: 200
 }
 
+type FieldForm struct {
+	Id   string
+	Name string
+}
+type Rs struct {
+	Form *FieldForm `json:"form"`
+}
+
 // ExampleHttpRequest_SetPostBody show howto POST in application/x-www-form-urlencoded
 func ExampleHttpRequest_SetPostBody() {
-	glogging.Init(nil, "")
+	glogging.Init([]string{"stderr"}, "debug")
 
 	rq := ghttp.New().
 		SetRequestMethod("POST").
@@ -48,29 +63,34 @@ func ExampleHttpRequest_SetPostBody() {
 
 	rqBody := []byte(form.Encode())
 
-	rq.SetPostBody(&rqBody)
+	rq.SetPostBody(rqBody)
 	err := rq.Send()
-	gutil.CheckErr(err)
+	gutil.ExitOnErr(err)
+
+	want := &FieldForm{
+		Id:   form.Get("id"),
+		Name: form.Get("name"),
+	}
+	var rs Rs
+	err = json.Unmarshal(rq.RespBody, &rs)
+	gutil.ExitOnErr(err)
 
 	fmt.Println(rq.RespStatus)
-	// Output: 200
-
-	log.Println(
-		rq.RespStatus,
-		string(rq.RespBody),
-	)
+	fmt.Println(want.Id == rs.Form.Id && want.Name == rs.Form.Name)
+	// Output:
+	// 200
+	// true
 }
 
-// ExampleHttpRequest_SetPostBody2 show howto POST in multipart/form-data
-func ExampleHttpRequest_SetPostBody2() {
-	glogging.Init(nil, "")
+// ExampleHttpRequest_SetPostBody show howto POST in multipart/form-data
+func ExampleHttpRequest_SetPostBody_multipart() {
+	glogging.Init([]string{"stderr"}, "debug")
+	// use default implement avoid conflict with ghttp/ghttp_test.go
+	ghttp.UseImpl(nil)
 
 	var err error
 
-	rq := ghttp.New().
-		SetRequestMethod("POST").
-		SetUri("https://httpbin.org/post").
-		SetTimeout(time.Second * 5)
+	gh := ghttp.New().SetTimeout(time.Second * 5)
 
 	var b bytes.Buffer
 	w := multipart.NewWriter(&b)
@@ -87,18 +107,89 @@ func ExampleHttpRequest_SetPostBody2() {
 	err = w.Close()
 	gutil.ExitOnErr(err)
 
-	rqBody := b.Bytes()
-
-	rq.SetPostBody(&rqBody)
-	rq.SetHeader("Content-Type", w.FormDataContentType())
-	err = rq.Send()
+	rq, err := http.NewRequest("POST", "https://httpbin.org/post", bytes.NewReader(b.Bytes()))
 	gutil.ExitOnErr(err)
 
-	fmt.Println(rq.RespStatus)
-	// Output: 200
+	rq.Header.Add("Content-Type", w.FormDataContentType())
+	rs, err := gh.Do(rq)
+	gutil.ExitOnErr(err)
 
-	log.Println(
-		rq.RespStatus,
-		string(rq.RespBody),
-	)
+	rsBody, err := ghttp.ReadBody(rs)
+	gutil.ExitOnErr(err)
+
+	fmt.Println(rs.StatusCode)
+	fmt.Println(len(rsBody) > 0)
+	// Output:
+	// 200
+	// true
+}
+
+func ExampleReadBody() {
+	glogging.Init([]string{"stderr"}, "error")
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	gh := ghttp.NewWithCtx(ctx).SetUri("https://httpbin.org/uuid")
+	rs, err := gh.Do(gh.GenerateRequest())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for i := 0; i < 3; i++ {
+		body, err := ghttp.ReadBody(rs)
+		if err != nil {
+			log.Fatal(err)
+		}
+		// something looks like `{"uuid": "2ae860ed-47da-4adb-9373-128f3eb4ce71"}`
+		fmt.Println(len(body))
+	}
+
+	// Output: 53
+	// 53
+	// 53
+}
+
+func ExampleHttpRequest_DoAndSetPostBody() {
+	glogging.Init([]string{"stderr"}, "debug")
+
+	paramsPost := map[string]interface{}{
+		"msg": "hello",
+	}
+	fullurl := "https://httpbin.org/post"
+	dataPostBody, _ := json.Marshal(paramsPost)
+
+	rq := ghttp.New().
+		SetRequestMethod("POST").
+		SetUri(fullurl)
+
+	rq.SetPostBody(dataPostBody)
+
+	resp, err := ghttp.NewWithCtx(context.Background()).
+		SetTimeout(DefaultTimeoutInSecs).
+		Do(rq.GenerateRequest())
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	dataRsBody, err := ghttp.ReadBody(resp)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	type Rs struct {
+		Data string
+	}
+	rs := &Rs{}
+	err = json.Unmarshal(dataRsBody, rs)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ghttp.CheckRequestErr(fullurl, resp.StatusCode, dataRsBody, err)
+	fmt.Println(resp.StatusCode)
+	fmt.Println(rs.Data)
+	// Output: 200
+	// {"msg":"hello"}
 }

@@ -3,6 +3,7 @@
 ignore/
 *.log
 *.gz
+.vscode/
 
 # Binaries for programs and plugins
 *.exe
