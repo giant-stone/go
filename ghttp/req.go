@@ -249,7 +249,11 @@ func (it *HttpRequest) Do(rq *http.Request) (rs *http.Response, err error) {
 	rs, err = Client.Do(rq)
 	elapsed := time.Since(now)
 
-	glogging.Sugared.Debugf("%s %s %d elapsed=%v err=%v", rq.Method, rq.URL.String(), rs.StatusCode, ghuman.FmtDuration(elapsed), err)
+	if rs == nil {
+		glogging.Sugared.Debugf("%s %s elapsed=%v err=%v", rq.Method, rq.URL.String(), ghuman.FmtDuration(elapsed), err)
+	} else {
+		glogging.Sugared.Debugf("%s %s %d elapsed=%v err=%v", rq.Method, rq.URL.String(), rs.StatusCode, ghuman.FmtDuration(elapsed), err)
+	}
 
 	if err != nil {
 		it.Elapsed = elapsed
