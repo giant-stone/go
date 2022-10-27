@@ -18,6 +18,25 @@ func UniqMapToSlice(m map[string]struct{}) (rs []string) {
 	return rs
 }
 
+type Int64Slice []int64
+
+func (x Int64Slice) Len() int           { return len(x) }
+func (x Int64Slice) Less(i, j int) bool { return x[i] < x[j] }
+func (x Int64Slice) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
+
+// UniqMapToSliceInt64 converts a map into a slice of int64.
+func UniqMapToSliceInt64(m map[int64]struct{}) (rs []int64) {
+	rs = make([]int64, 0)
+	for item := range m {
+		if item == 0 {
+			continue
+		}
+		rs = append(rs, item)
+	}
+	sort.Sort(Int64Slice(rs))
+	return rs
+}
+
 // MergeSliceInUniq merges two slice of string into map in unique.
 func MergeSliceInUniq(a []string, b []string) (rs map[string]struct{}) {
 	rs = make(map[string]struct{}, 0)
