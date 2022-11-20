@@ -112,3 +112,28 @@ func TestMergeSliceInUniqAndOrder(t *testing.T) {
 		require.Equal(t, item.want, got)
 	}
 }
+
+func TestUniqMapToSliceInt64(t *testing.T) {
+	for _, item := range []struct {
+		s    map[int64]struct{}
+		want []int64
+	}{
+		{
+			map[int64]struct{}{
+				1: {},
+				5: {},
+				3: {},
+			},
+			[]int64{1, 3, 5},
+		},
+
+		{map[int64]struct{}{}, []int64{}},
+
+		{nil, []int64{}},
+	} {
+		got := gslice.UniqMapToSliceInt64(item.s)
+		sort.Sort(gslice.Int64Slice(got))
+		sort.Sort(gslice.Int64Slice(item.want))
+		require.Equal(t, item.want, got)
+	}
+}

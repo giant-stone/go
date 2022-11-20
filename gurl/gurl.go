@@ -45,10 +45,8 @@ func ParseQueryGetValueByName(s, name string) (rs string) {
 		qs = s
 	}
 
-	if !strings.Contains(qs, "=") {
-		rs = s
-	} else {
-		rsParse, _ := url.ParseQuery(qs)
+	rsParse, err := url.ParseQuery(qs)
+	if err == nil {
 		rs = rsParse.Get(name)
 	}
 	return
