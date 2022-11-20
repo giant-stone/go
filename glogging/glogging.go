@@ -32,9 +32,9 @@ func Init(logpaths []string, loglevel Loglevel) {
 	if len(logpaths) > 0 {
 		for _, logto := range logpaths {
 			if logto == "stdout" {
-				cores = append(cores, zapcore.NewCore(enc, zapcore.Lock(os.Stdout), loglevelStr2uint(loglevel)))
+				cores = append(cores, zapcore.NewCore(enc, zapcore.Lock(os.Stdout), LoglevelStr2uint(loglevel)))
 			} else if logto == "stderr" {
-				cores = append(cores, zapcore.NewCore(enc, zapcore.Lock(os.Stderr), loglevelStr2uint(loglevel)))
+				cores = append(cores, zapcore.NewCore(enc, zapcore.Lock(os.Stderr), LoglevelStr2uint(loglevel)))
 			} else if logto != "" {
 				lumberJackLogger := &lumberjack.Logger{
 					Filename:   logto,
@@ -43,11 +43,11 @@ func Init(logpaths []string, loglevel Loglevel) {
 					MaxAge:     30,
 					Compress:   true,
 				}
-				cores = append(cores, zapcore.NewCore(enc, zapcore.AddSync(lumberJackLogger), loglevelStr2uint(loglevel)))
+				cores = append(cores, zapcore.NewCore(enc, zapcore.AddSync(lumberJackLogger), LoglevelStr2uint(loglevel)))
 			}
 		}
 	} else {
-		cores = append(cores, zapcore.NewCore(enc, zapcore.AddSync(ioutil.Discard), loglevelStr2uint(loglevel)))
+		cores = append(cores, zapcore.NewCore(enc, zapcore.AddSync(ioutil.Discard), LoglevelStr2uint(loglevel)))
 	}
 
 	Logger = zap.New(zapcore.NewTee(cores...), zap.AddCaller())
@@ -56,8 +56,8 @@ func Init(logpaths []string, loglevel Loglevel) {
 	Sugared = Logger.Sugar()
 }
 
-// loglevelStr2uint converts logging level from a string into zapcore.Level.
-func loglevelStr2uint(loglevel Loglevel) (rs zapcore.Level) {
+// LoglevelStr2uint converts logging level from a string into zapcore.Level.
+func LoglevelStr2uint(loglevel Loglevel) (rs zapcore.Level) {
 	switch loglevel {
 	case DEBUG:
 		{
