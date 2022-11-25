@@ -4,6 +4,7 @@ package glogging
 import (
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/natefinch/lumberjack"
 	"go.uber.org/zap"
@@ -78,4 +79,16 @@ func LoglevelStr2uint(loglevel Loglevel) (rs zapcore.Level) {
 		}
 	}
 	return zapcore.DebugLevel
+}
+
+// String2LogLevel convert level name string into glogging.Loglevel type
+func String2LogLevel(s string) Loglevel {
+	level := Loglevel(strings.ToLower(s))
+	if level != DEBUG &&
+		level != WARN &&
+		level != ERROR &&
+		level != FATAL {
+		level = DEBUG
+	}
+	return level
 }
