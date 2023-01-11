@@ -24,4 +24,8 @@ func TestString(t *testing.T) {
 		require.Equal(t, item.len, len(got2))
 		require.True(t, got1 != got2)
 	}
+
+	got1 := grand.String(5)
+	got2 := grand.String(5)
+	require.NotEqual(t, got1, got2)
 }
