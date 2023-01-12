@@ -30,9 +30,19 @@ func Yyyymmdd2unixTimeUtc(s string) (rs int64, err error) {
 	return
 }
 
-// UnixTime2YyyymmddUtc convert a unix time to a string in format "2006-01-02".
+// UnixTime2YyyymmddUtc convert a unix time to a string in format "2006-01-02" in UTC.
 func UnixTime2YyyymmddUtc(t int64) (rs string) {
 	return time.Unix(t, 0).UTC().Format("2006-01-02")
+}
+
+// UnixTime2YyyymmddLocal convert a unix time to a string in format "2006-01-02" in local.
+func UnixTime2YyyymmddLocal(t int64) (rs string) {
+	return time.Unix(t, 0).Format("2006-01-02")
+}
+
+// UnixTime2YYYYMMDDHHmmUtc convert a unix time to a string in UTC in format "2006-01-02 15:04:05".
+func UnixTime2YYYYMMDDHHmmUtc(t int64) (rs string) {
+	return time.Unix(t, 0).UTC().Format("2006-01-02 15:04:05")
 }
 
 // UnixTime2YYYYMMDDHHmmLocal convert a unix time to a string in local in format "2006-01-02 15:04:05".
