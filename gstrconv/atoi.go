@@ -1,9 +1,8 @@
-package gstr
+package gstrconv
 
 import (
 	"regexp"
 	"strconv"
-	"unicode"
 )
 
 // Atoi parses a string into int.
@@ -16,24 +15,6 @@ func Atoi(s string) (i int) {
 func Atoi64(s string) (rs int64) {
 	i, _ := strconv.ParseUint(s, 10, 64)
 	return int64(i)
-}
-
-// IsInteger check a string if is an integer.
-func IsInteger(s string) (rs bool) {
-	rs = true
-
-	if s == "" {
-		rs = false
-		return
-	}
-
-	for _, r := range s {
-		if !unicode.IsDigit(rune(r)) {
-			rs = false
-			break
-		}
-	}
-	return
 }
 
 var (

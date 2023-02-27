@@ -1,19 +1,17 @@
-package gstr_test
+package gstrconv_test
 
 import (
 	"reflect"
 	"testing"
 
-	"github.com/giant-stone/go/gstr"
+	"github.com/giant-stone/go/gstrconv"
 )
 
-type SampleAtoi struct {
-	s    string
-	want int
-}
-
 func TestAtoi(t *testing.T) {
-	for _, item := range []SampleAtoi{
+	for _, item := range []struct {
+		s    string
+		want int
+	}{
 		{
 			"2008",
 			2008,
@@ -29,7 +27,7 @@ func TestAtoi(t *testing.T) {
 			2008,
 		},
 	} {
-		got := gstr.ParseDigitFromMixed(item.s)
+		got := gstrconv.ParseDigitFromMixed(item.s)
 		if !reflect.DeepEqual(item.want, got) {
 			t.Errorf("Shorten -%v- want %v got %v", item.s, item.want, got)
 		}
@@ -49,7 +47,7 @@ func TestParseDigitFromMixed(t *testing.T) {
 		{` Episode 1`, 1},
 		{"", 0},
 	} {
-		got := gstr.ParseDigitFromMixed(item.s)
+		got := gstrconv.ParseDigitFromMixed(item.s)
 		if !reflect.DeepEqual(item.want, got) {
 			t.Errorf("Shorten -%v- want %v got %v", item.s, item.want, got)
 		}
