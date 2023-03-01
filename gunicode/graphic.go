@@ -1,7 +1,7 @@
-package gstr
+package gunicode
 
-// IsAscii tests a rune if it is a ascii character [a-zA-Z0-9].
-func IsAscii(r rune) bool {
+// IsWordCharacters tests a rune if it is a word character [a-zA-Z0-9] used in regular expression.
+func IsWordCharacters(r rune) bool {
 	return IsAlphabet(r) || (r >= '0' && r <= '9')
 }
 
