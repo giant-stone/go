@@ -117,7 +117,8 @@ func (it *HttpRequest) SetHeaders(headers map[string]interface{}) *HttpRequest {
 }
 
 // DEPRECATED.
-//   `Send()` does not supports gomock, use `Do()` instead.
+//
+//	`Send()` does not supports gomock, use `Do()` instead.
 func (it *HttpRequest) Send() (err error) {
 	client := &http.Client{
 		Timeout: it.Timeout,
@@ -193,7 +194,10 @@ func (it *HttpRequest) Send() (err error) {
 }
 
 func (it *HttpRequest) GenerateRequest() (rs *http.Request) {
-	rs, _ = http.NewRequestWithContext(it.Ctx, it.Method, it.Uri, bytes.NewReader(it.Body))
+	rs, err := http.NewRequestWithContext(it.Ctx, it.Method, it.Uri, bytes.NewReader(it.Body))
+	if err != nil {
+		return nil
+	}
 
 	for k, v := range it.Headers {
 		value := fmt.Sprintf("%v", v)
