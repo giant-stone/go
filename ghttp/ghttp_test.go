@@ -8,8 +8,8 @@ import (
 
 	"github.com/giant-stone/go/ghttp"
 	"github.com/giant-stone/go/glogging"
-	gomock "github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
+	gomock "go.uber.org/mock/gomock"
 )
 
 func TestGhttpDoGhttpNew(t *testing.T) {
