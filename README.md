@@ -6,7 +6,7 @@
 
 giant-stone/go is a Go library which provides utility functions for common programming tasks.
 
-Build requirement: Go 1.13 or newer.
+Build requirement: Go 1.20.
 
 giant-stone/go 是一个将多个生产环境项目高频使用函数整合一起，避免在每个项目中不断重复。
 
