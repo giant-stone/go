@@ -36,6 +36,8 @@ type HttpRequest struct {
 
 	Proxy string
 
+	InsecureSkipVerify bool
+
 	// request send at timestamp in unix(milliseconds)
 	Rqts    int64
 	Elapsed time.Duration
@@ -116,6 +118,11 @@ func (it *HttpRequest) SetHeaders(headers map[string]interface{}) *HttpRequest {
 	return it
 }
 
+func (it *HttpRequest) SetInsecureSkipVerify(flag bool) *HttpRequest {
+	it.InsecureSkipVerify = flag
+	return it
+}
+
 // DEPRECATED.
 //
 //	`Send()` does not supports gomock, use `Do()` instead.
@@ -125,7 +132,7 @@ func (it *HttpRequest) Send() (err error) {
 	}
 
 	tr := http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: it.InsecureSkipVerify},
 	}
 
 	if it.Proxy != "" {
@@ -225,7 +232,7 @@ func (it *HttpRequest) Do(rq *http.Request) (rs *http.Response, err error) {
 		}
 
 		tr := http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: it.InsecureSkipVerify},
 		}
 
 		if it.Proxy != "" {
