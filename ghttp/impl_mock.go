@@ -8,7 +8,7 @@ import (
 	http "net/http"
 	reflect "reflect"
 
-	gomock "go.uber.org/mock/gomock"
+	"github.com/golang/mock/gomock"
 )
 
 // MockHttpClient is a mock of HttpClient interface.
