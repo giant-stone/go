@@ -27,8 +27,46 @@ var Sugared *zap.SugaredLogger
 //
 //	parameter logPaths available value: stdout,stderr,path/to/file;
 //	parameter loglevel
+//
+// Deprecated: As of v1.0.1, use Install instead.
 func Init(logPaths []string, loglevel Loglevel) {
 	enc := zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
+
+	cores := make([]zapcore.Core, 0)
+	if len(logPaths) > 0 {
+		for _, logPath := range logPaths {
+			if logPath == "stdout" {
+				cores = append(cores, zapcore.NewCore(enc, zapcore.Lock(os.Stdout), LoglevelStr2uint(loglevel)))
+			} else if logPath == "stderr" {
+				cores = append(cores, zapcore.NewCore(enc, zapcore.Lock(os.Stderr), LoglevelStr2uint(loglevel)))
+			} else if logPath != "" {
+				lumberJackLogger := &lumberjack.Logger{
+					Filename:   logPath,
+					MaxSize:    100,
+					MaxBackups: 15,
+					MaxAge:     30,
+					Compress:   true,
+				}
+				cores = append(cores, zapcore.NewCore(enc, zapcore.AddSync(lumberJackLogger), LoglevelStr2uint(loglevel)))
+			}
+		}
+	} else {
+		cores = append(cores, zapcore.NewCore(enc, zapcore.AddSync(ioutil.Discard), LoglevelStr2uint(loglevel)))
+	}
+
+	Logger = zap.New(zapcore.NewTee(cores...), zap.AddCaller())
+	defer Logger.Sync()
+
+	Sugared = Logger.Sugar()
+}
+
+func Install(logPaths []string, loglevel Loglevel, consoleSeparator string) {
+	config := zap.NewDevelopmentEncoderConfig()
+	if consoleSeparator != "" {
+		config.ConsoleSeparator = consoleSeparator
+	}
+
+	enc := zapcore.NewConsoleEncoder(config)
 
 	cores := make([]zapcore.Core, 0)
 	if len(logPaths) > 0 {
