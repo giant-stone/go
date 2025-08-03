@@ -1,4 +1,4 @@
-// logger customs go.uber.org/zap logger with level, caller context and rorate file via github.com/natefinch/lumberjack.
+// logger customs go.uber.org/zap logger with level, caller context and rotate file via github.com/natefinch/lumberjack.
 package glogging
 
 import (
@@ -24,21 +24,22 @@ var Logger *zap.Logger
 var Sugared *zap.SugaredLogger
 
 // Init customs go.uber.org/zap glogging.
-//   parameter logpaths available value: stdout,stderr,path/to/file;
-//   parameter loglevel
-func Init(logpaths []string, loglevel Loglevel) {
+//
+//	parameter logPaths available value: stdout,stderr,path/to/file;
+//	parameter loglevel
+func Init(logPaths []string, loglevel Loglevel) {
 	enc := zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
 
 	cores := make([]zapcore.Core, 0)
-	if len(logpaths) > 0 {
-		for _, logto := range logpaths {
-			if logto == "stdout" {
+	if len(logPaths) > 0 {
+		for _, logPath := range logPaths {
+			if logPath == "stdout" {
 				cores = append(cores, zapcore.NewCore(enc, zapcore.Lock(os.Stdout), LoglevelStr2uint(loglevel)))
-			} else if logto == "stderr" {
+			} else if logPath == "stderr" {
 				cores = append(cores, zapcore.NewCore(enc, zapcore.Lock(os.Stderr), LoglevelStr2uint(loglevel)))
-			} else if logto != "" {
+			} else if logPath != "" {
 				lumberJackLogger := &lumberjack.Logger{
-					Filename:   logto,
+					Filename:   logPath,
 					MaxSize:    100,
 					MaxBackups: 15,
 					MaxAge:     30,
