@@ -1,6 +1,6 @@
 # About
 
-![Go](https://github.com/giant-stone/go/workflows/Go/badge.svg?branch=master)
+[![Go](https://github.com/giant-stone/go/actions/workflows/go.yml/badge.svg)](https://github.com/giant-stone/go/actions/workflows/go.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/giant-stone/go)](https://goreportcard.com/report/github.com/giant-stone/go)
 [![LICENSE](https://img.shields.io/github/license/giant-stone/go.svg?style=flat-square)](https://github.com/giant-stone/go/blob/master/LICENSE)
 
@@ -22,3 +22,4 @@ giant-stone/go 是一个将多个生产环境项目高频使用函数整合一�
 
     go install github.com/golang/mock/mockgen@v1.6.0
     mockgen -source=ghttp/ghttp.go -destination=ghttp/impl_mock.go -package=ghttp -mock_names Interface=ImplMock
+
