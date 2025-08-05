@@ -21,7 +21,5 @@ giant-stone/go 是一个将多个生产环境项目高频使用函数整合一�
 
 更新 ghttp mock 代码
 
-    go install github.com/golang/mock/mockgen@v1.6.0
+    go install go.uber.org/mock/mockgen@v0.4.0
     mockgen -source=ghttp/ghttp.go -destination=ghttp/impl_mock.go -package=ghttp -mock_names Interface=ImplMock
-
-
