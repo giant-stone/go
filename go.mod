@@ -1,11 +1,11 @@
 module github.com/giant-stone/go
 
-go 1.20
+go 1.23
 
 require (
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/stretchr/testify v1.10.0
-	go.uber.org/mock v0.4.0
+	go.uber.org/mock v0.5.2
 	go.uber.org/zap v1.27.0
 )
 
