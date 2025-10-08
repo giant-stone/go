@@ -58,7 +58,8 @@ func MergeSliceInUniq(a []string, b []string) (rs map[string]struct{}) {
 }
 
 // SliceIndex get item index of a slice
-//  ref:https://stackoverflow.com/a/8307594/913751
+//
+//	ref:https://stackoverflow.com/a/8307594/913751
 func SliceIndex(limit int, predicate func(i int) bool) int {
 	for i := 0; i < limit; i++ {
 		if predicate(i) {
@@ -90,4 +91,16 @@ func MergeSliceInUniqAndOrder(merged []string, part []string) (rs []string) {
 	}
 
 	return sorted
+}
+
+// Insert inserts an item at the given index in a slice of any type
+func Insert[T any](slice []T, index int, newItem T) []T {
+	// Check if the index is out of bounds
+	if index < 0 || index > len(slice) {
+		return slice
+	}
+
+	// Create a new slice with extra space and insert the new item
+	slice = append(slice[:index], append([]T{newItem}, slice[index:]...)...)
+	return slice
 }

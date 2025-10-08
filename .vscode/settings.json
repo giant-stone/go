@@ -1,6 +1,9 @@
 {
   "cSpell.words": [
+    "ghttp",
+    "gslice",
     "gtime",
+    "mockgen",
     "natefinch",
     "stretchr"
   ]
