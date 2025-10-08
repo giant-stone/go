@@ -26,7 +26,7 @@ func TestYyyymmdd2unixTimeUtc(t *testing.T) {
 	}
 }
 
-func TestMustParseDateInUnixtimeUtc(t *testing.T) {
+func TestMustParseDateInUnixTimeUtc(t *testing.T) {
 	samples := []struct {
 		s    string
 		want int64
@@ -36,12 +36,12 @@ func TestMustParseDateInUnixtimeUtc(t *testing.T) {
 	}
 
 	for _, tc := range samples {
-		got := gtime.MustParseDateInUnixtimeUtc(tc.s)
+		got := gtime.MustParseDateInUnixTimeUtc(tc.s)
 		require.Equal(t, tc.want, got, tc.s)
 	}
 }
 
-func TestUnixTime2YyyymmddUtc(t *testing.T) {
+func TestUnixTimeToYMDHmUtc(t *testing.T) {
 	samples := []struct {
 		s    int64
 		want string
@@ -53,15 +53,15 @@ func TestUnixTime2YyyymmddUtc(t *testing.T) {
 	}
 
 	for _, tc := range samples {
-		got := gtime.UnixTime2YyyymmddUtc(tc.s)
+		got := gtime.UnixTimeToYMDHmUtc(tc.s)
 
 		if !reflect.DeepEqual(tc.want, got) {
-			t.Errorf("UnixTime2YyyymmddUtc -%v- want %v got %v", tc.s, tc.want, got)
+			t.Errorf("UnixTimeToYMDHmUtc -%v- want %v got %v", tc.s, tc.want, got)
 		}
 	}
 }
 
-func TestUnixTime2YyyymmddLocal(t *testing.T) {
+func TestUnixTimeToYMDHmLocal(t *testing.T) {
 	samples := []struct {
 		s    int64
 		tz   *time.Location
@@ -73,15 +73,15 @@ func TestUnixTime2YyyymmddLocal(t *testing.T) {
 	}
 
 	for _, tc := range samples {
-		got := gtime.UnixTime2YyyymmddLocal(tc.s, tc.tz)
+		got := gtime.UnixTimeToYMDHmLocal(tc.s, tc.tz)
 
 		if !reflect.DeepEqual(tc.want, got) {
-			t.Errorf("UnixTime2YyyymmddLocal -%v- want %v got %v", tc.s, tc.want, got)
+			t.Errorf("UnixTimeToYMDHmLocal -%v- want %v got %v", tc.s, tc.want, got)
 		}
 	}
 }
 
-func TestUnixTime2YYYYMMDDHHmmUtc(t *testing.T) {
+func TestUnixTimeToYMDHmSUtc(t *testing.T) {
 	samples := []struct {
 		s    int64
 		want string
@@ -90,15 +90,15 @@ func TestUnixTime2YYYYMMDDHHmmUtc(t *testing.T) {
 	}
 
 	for _, tc := range samples {
-		got := gtime.UnixTime2YYYYMMDDHHmmUtc(tc.s)
+		got := gtime.UnixTimeToYMDHmSUtc(tc.s)
 
 		if !reflect.DeepEqual(tc.want, got) {
-			t.Errorf("UnixTime2YYYYMMDDHHmmUtc -%v- want %v got %v", tc.s, tc.want, got)
+			t.Errorf("UnixTimeToYMDHmSUtc -%v- want %v got %v", tc.s, tc.want, got)
 		}
 	}
 }
 
-func TestUnixTime2YYYYMMDDHHmmLocal(t *testing.T) {
+func TestUnixTimeToYMDHmSLocal(t *testing.T) {
 	samples := []struct {
 		s    int64
 		tz   *time.Location
@@ -110,10 +110,10 @@ func TestUnixTime2YYYYMMDDHHmmLocal(t *testing.T) {
 	}
 
 	for _, tc := range samples {
-		got := gtime.UnixTime2YYYYMMDDHHmmLocal(tc.s, tc.tz)
+		got := gtime.UnixTimeToYMDHmSLocal(tc.s, tc.tz)
 
 		if !reflect.DeepEqual(tc.want, got) {
-			t.Errorf("UnixTime2YYYYMMDDHHmmLocal -%v- want %v got %v", tc.s, tc.want, got)
+			t.Errorf("UnixTimeToYMDHmSLocal -%v- want %v got %v", tc.s, tc.want, got)
 		}
 	}
 }

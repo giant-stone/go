@@ -5,21 +5,22 @@
 [![LICENSE](https://img.shields.io/github/license/giant-stone/go.svg?style=flat-square)](https://github.com/giant-stone/go/blob/master/LICENSE)
 [![GoDoc](https://godoc.org/github.com/giant-stone/go?status.svg)](https://godoc.org/github.com/giant-stone/go)
 
-giant-stone/go is a Go library which provides utility functions for common programming tasks.
+giant-stone/go is a library that integrates frequently used functions from multiple production environment projects,
+avoiding repetition in each project.
 
-Build requirement: Go 1.20.
+Build requirement:
 
-giant-stone/go 是一个将多个生产环境项目高频使用函数整合一起，避免在每个项目中不断重复。
+- Go >= 1.20
 
-安装最新版本
+Installing the latest version
 
     go list -m -versions github.com/giant-stone/go
-    # 在输出中选择最新一个版本，比如 `v1.0.0`
-    go get -u github.com/giant-stone/go@v1.0.0
+    # Choose the latest version from the output, such as `v1.1.0`
+    go get -u github.com/giant-stone/go@v1.1.0
 
-使用示例见 https://github.com/giant-stone/go/wiki
+For usage examples, see <https://github.com/giant-stone/go/wiki>
 
-更新 ghttp mock 代码
+Updating ghttp mock code
 
     go install go.uber.org/mock/mockgen@v0.4.0
     mockgen -source=ghttp/ghttp.go -destination=ghttp/impl_mock.go -package=ghttp -mock_names Interface=ImplMock
