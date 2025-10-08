@@ -1,4 +1,4 @@
-// All Unix time(stamp) in UTC.
+// All Unix time(stamp) in UTC by default.
 // https://en.wikipedia.org/wiki/Unix_time
 package gtime
 
@@ -31,27 +31,56 @@ func Yyyymmdd2unixTimeUtc(s string) (rs int64, err error) {
 	return rs, nil
 }
 
-// UnixTime2YyyymmddUtc convert a unix time to a string in format "2006-01-02" in UTC.
-func UnixTime2YyyymmddUtc(t int64) (rs string) {
+// UnixTimeToYMDHmUtc convert a unix time to a string in format "2006-01-02" in UTC.
+func UnixTimeToYMDHmUtc(t int64) (rs string) {
 	return time.Unix(t, 0).UTC().Format("2006-01-02")
 }
 
-// UnixTime2YyyymmddLocal convert a unix time to a string in format "2006-01-02" in specified timezone.
-func UnixTime2YyyymmddLocal(t int64, tz *time.Location) (rs string) {
+// UnixTimeToYMDHmLocal convert a unix time to a string in format "2006-01-02" in specified timezone.
+func UnixTimeToYMDHmLocal(t int64, tz *time.Location) (rs string) {
 	return time.Unix(t, 0).In(tz).Format("2006-01-02")
 }
 
-// UnixTime2YYYYMMDDHHmmUtc convert a unix time to a string in UTC in format "2006-01-02 15:04:05".
-func UnixTime2YYYYMMDDHHmmUtc(t int64) (rs string) {
+// UnixTimeToYMDHmSUtc convert a unix time to a string in UTC in format "2006-01-02 15:04:05".
+func UnixTimeToYMDHmSUtc(t int64) (rs string) {
 	return time.Unix(t, 0).UTC().Format("2006-01-02 15:04:05")
 }
 
-// UnixTime2YYYYMMDDHHmmLocal convert a unix time to a string in specified timezone in format "2006-01-02 15:04:05".
-func UnixTime2YYYYMMDDHHmmLocal(t int64, tz *time.Location) (rs string) {
+// UnixTimeToYMDHmSLocal convert a unix time to a string in specified timezone in format "2006-01-02 15:04:05".
+func UnixTimeToYMDHmSLocal(t int64, tz *time.Location) (rs string) {
 	return time.Unix(t, 0).In(tz).Format("2006-01-02 15:04:05")
 }
 
-func MustParseDateInUnixtimeUtc(s string) (rs int64) {
+func MustParseDateInUnixTimeUtc(s string) (rs int64) {
 	rs, _ = Yyyymmdd2unixTimeUtc(s)
 	return rs
+}
+
+// UnixTime2YyyymmddUtc convert a unix time to a string in format "2006-01-02" in UTC.
+// Deprecated: As of v1.1.0, use UnixTimeToYMDHmUtc instead.
+func UnixTime2YyyymmddUtc(t int64) (rs string) {
+	return UnixTimeToYMDHmUtc(t)
+}
+
+// UnixTime2YyyymmddLocal convert a unix time to a string in format "2006-01-02" in specified timezone.
+// Deprecated: As of v1.1.0, use UnixTimeToYMDHmLocal instead.
+func UnixTime2YyyymmddLocal(t int64, tz *time.Location) (rs string) {
+	return UnixTimeToYMDHmLocal(t, tz)
+}
+
+// UnixTime2YYYYMMDDHHmmUtc convert a unix time to a string in UTC in format "2006-01-02 15:04:05".
+// Deprecated: As of v1.1.0, use UnixTimeToYMDHmSUtc instead.
+func UnixTime2YYYYMMDDHHmmUtc(t int64) (rs string) {
+	return UnixTimeToYMDHmSUtc(t)
+}
+
+// UnixTime2YYYYMMDDHHmmLocal convert a unix time to a string in specified timezone in format "2006-01-02 15:04:05".
+// Deprecated: As of v1.1.0, use UnixTimeToYMDHmSLocal instead.
+func UnixTime2YYYYMMDDHHmmLocal(t int64, tz *time.Location) (rs string) {
+	return UnixTimeToYMDHmSLocal(t, tz)
+}
+
+// Deprecated: As of v1.1.0, use MustParseDateInUnixTimeUtc instead.
+func MustParseDateInUnixtimeUtc(s string) (rs int64) {
+	return MustParseDateInUnixTimeUtc(s)
 }
